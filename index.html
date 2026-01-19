@@ -65,13 +65,14 @@
             flex: 1;
             padding: 40px;
             max-width: 1200px;
+            padding-bottom: 100px;
         }
 
         .header-section { margin-bottom: 30px; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .header-section h2 { font-size: 2rem; margin-bottom: 15px; color: var(--primary); }
         .header-section p { color: #475569; line-height: 1.8; }
 
-        /* --- 卡片網格 (Weeks 1-3) --- */
+        /* --- 卡片網格 --- */
         .card-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -81,7 +82,7 @@
 
         .flashcard {
             background: white;
-            height: 200px;
+            height: 220px;
             border-radius: 16px;
             cursor: pointer;
             transition: transform 0.3s, box-shadow 0.3s;
@@ -115,6 +116,16 @@
             display: flex;
             align-items: center;
             gap: 5px;
+        }
+
+        /* --- AI 區塊 --- */
+        .ai-panel {
+            margin-top: 40px;
+            padding: 25px;
+            background: linear-gradient(to right, #e0f2fe, #f0f9ff);
+            border-radius: 16px;
+            border: 2px dashed #0284c7;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
 
         /* --- 詳情彈窗 (Modal) --- */
@@ -163,21 +174,12 @@
         .close-btn { background: none; border: none; font-size: 2rem; cursor: pointer; color: #94a3b8; line-height: 1; }
         .close-btn:hover { color: #ef4444; }
 
-        /* 彈窗內樣式 */
         .detail-block { margin-bottom: 25px; }
         .detail-title { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-        .highlight-box {
-            background: #f0fdfa;
-            border-left: 4px solid var(--primary);
-            padding: 15px;
-            margin: 15px 0;
-            font-size: 0.95rem;
-            color: #134e4a;
-        }
 
-        /* --- 遊戲模擬器 (Week 4) --- */
+        /* --- 遊戲模擬器 --- */
         .game-panel {
-            background: #1e293b; /* 深色背景區分 */
+            background: #1e293b;
             color: #e2e8f0;
             border-radius: 20px;
             padding: 40px;
@@ -232,13 +234,23 @@
     <nav class="sidebar">
         <div class="brand">🚀 財富特訓班</div>
         <div class="brand-sub">從觀念到模擬實戰</div>
-        <ul id="moduleList">
-            </ul>
+        <ul id="moduleList"></ul>
     </nav>
 
     <main class="main-content">
-        <div id="contentArea">
+        <div id="contentArea"></div>
+
+        <div class="ai-panel" id="aiPanel">
+            <h3 style="color:#0369a1; display:flex; align-items:center; gap:10px;">
+                🤖 AI 投資顧問 <span style="font-size:0.8rem; color:#64748b; font-weight:normal;">(Powered by Gemini 3 Flash)</span>
+            </h3>
+            <textarea id="userPrompt" style="width: 100%; height: 80px; margin: 15px 0; padding: 10px; border:1px solid #bae6fd; border-radius:8px;" placeholder="輸入你的問題，例如：什麼是機會成本？我該怎麼配置資產？"></textarea>
+            <button onclick="askGemini()" style="background: #0284c7; color: white; padding: 10px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight:bold;">發送請求</button>
+            
+            <div id="aiResponse" style="margin-top: 15px; color: #334155; white-space: pre-wrap; display: none; background:white; padding:15px; border-radius:8px; border:1px solid #e2e8f0;">
+                正在分析中...
             </div>
+        </div>
     </main>
 
     <div class="modal-overlay" id="detailModal" onclick="closeModal(event)">
@@ -247,44 +259,25 @@
                 <h2 style="font-size:1.5rem; color:var(--primary);" id="modalTitle">標題</h2>
                 <button class="close-btn" onclick="closeModal()">×</button>
             </div>
-            <div class="modal-body" id="modalBody">
-                </div>
+            <div class="modal-body" id="modalBody"></div>
         </div>
     </div>
 
     <script>
+        // --- 🔴 API KEY 設定 ---
+        const API_KEY = "AIzaSyBhTKeTX_Eoy-ynJEEoahteTWxYOB0Kgjw"; 
+
         // --- 資料庫：課程 + 遊戲劇本 ---
         const curriculum = [
             {
                 id: 1,
-                type: 'study', // 學習模式
+                type: 'study',
                 title: "第一週：理財基本功",
                 desc: "在投資之前，先學會守住錢。了解會計基礎與債務管理。",
                 cards: [
-                    { 
-                        title: "損益表 (P&L)", 
-                        tag: "會計基礎", 
-                        details: [
-                            { sub: "定義", txt: "損益 = 營收 - 成本。這是判斷個人或公司有沒有賺錢的最基本公式。" },
-                            { sub: "應用", txt: "對個人來說：薪水(營收) - 生活費(成本) = 儲蓄(損益)。如果你的損益是負的，代表你在吃老本。" }
-                        ]
-                    },
-                    { 
-                        title: "緊急備用金", 
-                        tag: "風險防禦", 
-                        details: [
-                            { sub: "為什麼需要？", txt: "人生充滿意外（裁員、生病、修車）。備用金是你的防護罩，讓你在沒收入時不至於變賣資產。" },
-                            { sub: "存多少？", txt: "建議存 3 ~ 6 個月的「必要生活費」。這筆錢要放在流動性高的地方（如活存），不能拿去投資。" }
-                        ]
-                    },
-                    { 
-                        title: "好債 vs 壞債", 
-                        tag: "債務管理", 
-                        details: [
-                            { sub: "壞債 (Bad Debt)", txt: "為了消費而借的錢，且不會帶來收入。例如：信用卡循環利息(高達15%)、信貸買奢侈品。這會讓你越來越窮。" },
-                            { sub: "好債 (Good Debt)", txt: "為了「賺更多錢」而借的錢。例如：學貸(提升賺錢能力)、房貸(抗通膨資產)、企業貸款(擴廠)。只要報酬率 > 利息，就是好債。" }
-                        ]
-                    }
+                    { title: "損益表 (P&L)", tag: "會計", details: [{sub:"定義", txt:"損益 = 營收 - 成本。"}, {sub:"應用", txt:"如果你的月薪扣掉花費是負的，代表你在吃老本。"}] },
+                    { title: "緊急備用金", tag: "防禦", details: [{sub:"定義", txt:"存下 3-6 個月的必要生活費。"}, {sub:"目的", txt:"失業或生病時的救命錢，絕不能拿去投資。"}] },
+                    { title: "好債 vs 壞債", tag: "債務", details: [{sub:"壞債", txt:"卡債、信貸買奢侈品。讓你越來越窮。"}, {sub:"好債", txt:"房貸、學貸。能抗通膨或提升未來收入。"}] }
                 ]
             },
             {
@@ -293,139 +286,142 @@
                 title: "第二週：金融市場與工具",
                 desc: "認識超市裡賣什麼菜：股票、債券與基金。",
                 cards: [
-                    { 
-                        title: "股票 (Stocks)", 
-                        tag: "高風險工具", 
-                        details: [
-                            { sub: "原理", txt: "擁有一家公司的一小部分。你是股東，可以分紅(股利)或賺價差。" },
-                            { sub: "風險", txt: "股價可能歸零。適合長期持有，透過時間換取高報酬。" }
-                        ]
-                    },
-                    { 
-                        title: "債券 (Bonds)", 
-                        tag: "低風險工具", 
-                        details: [
-                            { sub: "原理", txt: "借錢給政府或公司，對方承諾定期付利息，到期還本金。" },
-                            { sub: "資產配置", txt: "通常股票跌的時候，債券會漲（或跌比較少），是保護資產的重要工具。" }
-                        ]
-                    },
-                    { 
-                        title: "ETF (指數型基金)", 
-                        tag: "新手推薦", 
-                        details: [
-                            { sub: "什麼是 ETF", txt: "像是一個便當，裡面有各種菜(股票)。例如 0050 買進台灣最大的50家公司。" },
-                            { sub: "優點", txt: "不用選股，自動分散風險。適合沒時間研究財報的投資人。" }
-                        ]
-                    }
+                    { title: "股票", tag: "高風險", details: [{sub:"定義", txt:"擁有公司一部分所有權。"}, {sub:"獲利", txt:"賺股價價差 + 股利分紅。"}] },
+                    { title: "債券", tag: "低風險", details: [{sub:"定義", txt:"借錢給政府或公司，對方付你利息。"}, {sub:"功能", txt:"資產配置中的安全氣囊。"}] },
+                    { title: "ETF", tag: "新手推薦", details: [{sub:"定義", txt:"一籃子股票。買0050等於買下全台灣最大的50家公司。"}, {sub:"優點", txt:"自動分散風險，不用選股。"}] }
                 ]
             },
             {
                 id: 3,
                 type: 'study',
-                title: "第三週：深入基本面 (核心)",
+                title: "第三週：深入基本面",
                 desc: "【進階】如何判斷一家公司真正的價值？",
                 cards: [
+                    { title: "本益比 (PE)", tag: "估值", details: [{sub:"公式", txt:"股價 / EPS。"}, {sub:"意義", txt:"買進這家公司，大概要幾年才能回本？"}] },
+                    { title: "淨值 (Book Value)", tag: "體質", details: [{sub:"公式", txt:"資產 - 負債。"}, {sub:"意義", txt:"公司清算後股東能拿回多少錢。"}] },
+                    { title: "殖利率", tag: "配息", details: [{sub:"公式", txt:"股利 / 股價。"}, {sub:"陷阱", txt:"不要只看高殖利率，要看填息能力。"}] }
+                ]
+            },
+            {
+                id: 4,
+                type: 'study',
+                title: "第四週：富人的思維模型 (ESBI)",
+                desc: "為什麼努力工作不一定會變有錢？因為你處在錯誤的象限。",
+                cards: [
                     {
-                        title: "基本面分析 (Fundamental)",
-                        tag: "核心觀念",
+                        title: "ESBI 象限",
+                        tag: "羅伯特·清崎",
                         details: [
-                            { sub: "1. 什麼是基本面？", txt: "研究公司的「健康檢查報告」。不看線圖，看財報、產業地位、賺錢能力。相信股價終究會回歸真實價值。" },
-                            { sub: "2. 淨值 (Net Worth)", txt: "<strong>公式：資產 - 負債 = 淨值 (股東權益)</strong>。<br>想像公司今天倒閉，把廠房設備全賣了還債，剩下來分給股東的錢就是淨值。如果股價低於每股淨值 (P/B < 1)，通常代表股價被低估了。" },
-                            { sub: "3. 負債 (Liabilities) 的詳細操作", txt: "<div class='highlight-box'>負債不一定是壞事！這叫「槓桿」。</div><strong>情境：</strong>如果台積電借錢蓋新廠，利息是 2%，但新廠能帶來 15% 的獲利，那這個借款就是「聰明的操作」。<br><br><strong>如何判斷：</strong>觀察「流動比率」(還錢能力) 與「利息保障倍數」(賺的錢夠不夠付利息)。只要現金流轉得過來，適度負債能加速成長。" },
-                            { sub: "4. 估值 (Valuation)", txt: "用來判斷現在買「貴還是便宜」。<br><strong>本益比 (PE Ratio)：</strong>股價 / EPS。簡單說就是「你要花幾年才能靠獲利回本」。<br>成長股通常本益比高(30倍+)，傳產股通常低(10-15倍)。" }
+                            { sub: "E (雇員)", txt: "用時間換錢，手停口停。" },
+                            { sub: "S (自僱者)", txt: "用專業換錢，依然是自己打工。" },
+                            { sub: "B (企業主)", txt: "用系統賺錢，離開公司依然在運轉。" },
+                            { sub: "I (投資者)", txt: "用錢賺錢，指數級增長。" }
                         ]
                     },
                     {
-                        title: "資產配置 (Allocation)",
-                        tag: "策略",
+                        title: "窮人 vs 富人思維",
+                        tag: "心態",
                         details: [
-                            { sub: "雞蛋別放同個籃子", txt: "將資金分配在相關性低的資產(如：股票+債券+現金)。" },
-                            { sub: "再平衡 (Rebalance)", txt: "每年檢查一次，把漲太多的賣掉一些，拿去買跌多的，強迫「買低賣高」。" }
+                            { sub: "金錢觀", txt: "窮人想著怎麼花錢，富人想著怎麼讓錢生錢 (ROI)。" },
+                            { sub: "風險觀", txt: "窮人害怕風險選安穩，富人管理風險找機會。" }
+                        ]
+                    },
+                    {
+                        title: "機會成本",
+                        tag: "決策",
+                        details: [
+                            { sub: "定義", txt: "為了選擇 A 而必須放棄的 B 的價值。" },
+                            { sub: "例子", txt: "花時間排隊買拉麵，成本不只是錢，還有你的時間價值。" }
                         ]
                     }
                 ]
             },
             {
-                id: 4,
-                type: 'game', // 遊戲模式
-                title: "第四週：人生模擬實戰",
-                desc: "你已經學會了基礎。現在，我們來模擬未來 10 年的人生財務決策。每個選擇都有代價。",
+                id: 5,
+                type: 'study',
+                title: "第五週：行為金融學",
+                desc: "賠錢通常是因為心理素質。Debug 人類大腦的原始設定。",
+                cards: [
+                    { title: "損失趨避", tag: "Bug", details: [{ sub: "現象", txt: "賠錢的痛苦是賺錢快樂的 2 倍。" }, { sub: "後果", txt: "散戶往往太早賣掉賺錢股，死抱著賠錢股。" }] },
+                    { title: "沈沒成本", tag: "陷阱", details: [{ sub: "定義", txt: "已發生無法回收的成本。" }, { sub: "策略", txt: "決策只看未來，不看過去賠了多少。" }] },
+                    { title: "確認偏誤", tag: "同溫層", details: [{ sub: "現象", txt: "只看贊同自己的新聞，無視利空。" }, { sub: "危險", txt: "對顯而易見的風險視而不見。" }] }
+                ]
+            },
+            {
+                id: 6,
+                type: 'study',
+                title: "第六週：週期的力量",
+                desc: "市場像呼吸一樣有週期。沒什麼是確定的，除了週期。",
+                cards: [
+                    { title: "鐘擺理論", tag: "霍華·馬克斯", details: [{ sub: "概念", txt: "市場情緒永遠在極度樂觀與悲觀間擺盪。" }, { sub: "應用", txt: "人棄我取，人取我與。" }] },
+                    { title: "均值回歸", tag: "數學法則", details: [{ sub: "定義", txt: "漲多必跌，跌多必漲。" }, { sub: "策略", txt: "不要追高乖離率過大的資產。" }] },
+                    { title: "黑天鵝 vs 灰犀牛", tag: "風險", details: [{ sub: "黑天鵝", txt: "機率小衝擊大 (如疫情)。" }, { sub: "灰犀牛", txt: "顯而易見卻被忽視的風險 (如泡沫)。" }] }
+                ]
+            },
+            {
+                id: 7,
+                type: 'game', 
+                title: "第七週：人生模擬實戰 (最終試煉)",
+                desc: "模擬未來 10 年的決策，看看你是否能避開人性陷阱，實現財富自由。",
                 startScene: 'start'
             }
         ];
 
-        // --- 遊戲腳本 (Game Script) ---
+        // --- 遊戲腳本 ---
         const gameScenes = {
             'start': {
-                icon: '🎓',
-                text: '你剛大學畢業，起薪 3.5 萬，手上有 10 萬積蓄。<br>第一個月發薪水，你打算怎麼做？',
+                icon: '🎓', text: '剛畢業起薪 3.5 萬，手上有 10 萬積蓄。第一個月發薪水怎麼辦？',
                 choices: [
-                    { txt: '犒賞自己！買 iPhone、吃大餐 (花掉 3 萬)', next: 'scene_2', money: -30000, msg: '享受當下很爽，但積蓄瞬間少了 30%。' },
-                    { txt: '嚴格執行 631 法則 (存下 30%)', next: 'scene_2', money: 5000, msg: '忍住了慾望。這筆儲蓄將成為你的第一桶金。' }
+                    { txt: '買 iPhone、吃大餐 (花掉 3 萬)', next: 'scene_2', money: -30000, msg: '享受當下，但積蓄瞬間少了 30%。' },
+                    { txt: '執行 631 法則 (存下 30%)', next: 'scene_2', money: 5000, msg: '忍住慾望，存下第一桶金。' }
                 ]
             },
             'scene_2': {
-                icon: '🚗',
-                text: '25 歲，工作三年了。同事們都買車了，你也想買一台 70 萬的新車代步。',
+                icon: '🚗', text: '25 歲，同事都買車了，你也想買一台 70 萬的新車。',
                 choices: [
-                    { txt: '買！分期付款也要買 (頭期款 20 萬)', next: 'car_path', money: -200000, msg: '你買了新車！但每個月多了車貸、油錢、保養費，現金流變得很緊。' },
-                    { txt: '忍住，騎機車就好，錢拿去投資', next: 'invest_path', money: 0, msg: '雖然通勤辛苦，但你避開了巨大的負債，並保留了投資本金。' }
+                    { txt: '買！分期付款也要買', next: 'car_path', money: -200000, msg: '買了新車！但每個月多了車貸養車費，現金流吃緊。' },
+                    { txt: '忍住，騎機車，錢拿去投資', next: 'invest_path', money: 0, msg: '避開了負債，保留投資本金。' }
                 ]
             },
-            // 分支 A：買車線
             'car_path': {
-                icon: '📉',
-                text: '買車後一年，公司突然裁員！你失去了收入，但車貸每個月還是要繳 1.5 萬。',
+                icon: '📉', text: '買車後一年被裁員！失去收入但車貸照繳。',
                 choices: [
-                    { txt: '慘了，沒有備用金，只能信貸', next: 'bad_end', money: -100000, msg: '債務越滾越大，這就是為什麼要有緊急備用金！' },
-                    { txt: '忍痛賣車求現', next: 'scene_3', money: 400000, msg: '新車落地打折，你虧了幾十萬，但至少解決了現金流危機。' }
+                    { txt: '沒備用金，只能信貸', next: 'bad_end', money: -100000, msg: '債務越滾越大。' },
+                    { txt: '忍痛賣車求現', next: 'scene_3', money: 400000, msg: '新車落地打折，虧了幾十萬但解決危機。' }
                 ]
             },
-            // 分支 B：投資線
             'invest_path': {
-                icon: '📈',
-                text: '你把沒買車的錢投入股市。這時遇到金融海嘯，帳面虧損 30%！',
+                icon: '📈', text: '錢投入股市，結果遇到金融海嘯，帳面虧損 40%！',
                 choices: [
-                    { txt: '嚇死了，全部賣掉止損', next: 'scene_3', money: -100000, msg: '你在最低點賣出，實現了虧損。這叫「韭菜」。' },
-                    { txt: '相信基本面，繼續定期定額', next: 'rich_path', money: 0, msg: '你忍住了恐慌。兩年後市場反彈，你的資產翻倍。' }
+                    { txt: '嚇死了，賣掉止損 (損失趨避)', next: 'scene_3', money: -100000, msg: '在最低點賣出，實現虧損。' },
+                    { txt: '相信基本面，繼續持有', next: 'rich_path', money: 0, msg: '忍住恐慌。兩年後市場反彈資產翻倍。' }
                 ]
             },
             'rich_path': {
-                icon: '💰',
-                text: '35 歲。因為當初沒買車 + 堅持投資，你的資產突破 500 萬。你可以選擇：',
+                icon: '💰', text: '35 歲，資產突破 500 萬。這時新聞狂報「全球經濟崩盤」...',
                 choices: [
-                    { txt: '付頭期款買房，成家立業', next: 'happy_end', money: -3000000, msg: '恭喜！你有了自己的家，且財務狀況依然健康。' },
-                    { txt: '辭職創業，追逐夢想', next: 'happy_end', money: -1000000, msg: '因為有被動收入支撐，你終於可以做自己想做的事！' }
+                    { txt: '我有做資產配置，不理會', next: 'market_crash_test', money: 0, msg: '準備好迎接考驗吧。' }
                 ]
             },
-            'scene_3': {
-                icon: '😐',
-                text: '經過波折，你到了 35 歲。雖然沒破產，但資產累積不多。',
+            'market_crash_test': {
+                icon: '📉', text: '【系統廣播】史詩級崩盤！你的朋友都在拋售，你該怎麼辦？',
                 choices: [
-                    { txt: '重新檢視財務，從頭開始', next: 'start', money: 0, msg: '人生隨時可以重新開始，這次記得要做好資產配置。' }
+                    { txt: '跟著賣掉 (從眾心理)', next: 'panic_sell', money: -500000, msg: '你因為恐慌而賣在低點。' },
+                    { txt: '動用備用金加碼 (貪婪)', next: 'aggressive_buy', money: 0, msg: '大膽接刀，風險極高。' },
+                    { txt: '關掉新聞，去散步 (鈍感力)', next: 'happy_end', money: 200000, msg: '一年後市場創新高，你什麼都沒做卻贏了。' }
                 ]
             },
-            'bad_end': {
-                icon: '💸',
-                text: '破產結局。你的現金流斷裂，被迫負債度日。',
-                choices: [
-                    { txt: '重新挑戰 (記取教訓)', next: 'start', money: 0, msg: '這次試著不要買車，並保留備用金試試看？' }
-                ]
-            },
-            'happy_end': {
-                icon: '🏆',
-                text: '財富自由結局！你做出了正確的選擇，讓複利為你工作。',
-                choices: [
-                    { txt: '再玩一次', next: 'start', money: 0, msg: '試試看別的選項吧！' }
-                ]
-            }
+            'panic_sell': { icon: '💸', text: '賣光後股市 V 型反轉創新高，你只能看著別人賺錢。', choices: [{ txt: '學到一課', next: 'start', money: 0, msg: '這堂課很貴。' }] },
+            'aggressive_buy': { icon: '🎰', text: '運氣好市場見底，你大賺一筆。但下次可能就沒這麼好運。', choices: [{ txt: '見好就收', next: 'happy_end', money: 1000000, msg: '富貴險中求。' }] },
+            'scene_3': { icon: '😐', text: '35 歲，資產平平。', choices: [{ txt: '重新開始', next: 'start', money: 0, msg: '重來一次。' }] },
+            'bad_end': { icon: '💸', text: '破產結局。', choices: [{ txt: '重新挑戰', next: 'start', money: 0, msg: '記得存備用金！' }] },
+            'happy_end': { icon: '🏆', text: '財富自由結局！你克服了人性，讓複利為你工作。', choices: [{ txt: '再玩一次', next: 'start', money: 0, msg: '恭喜！' }] }
         };
 
-        // --- 全域變數 ---
+        // --- 核心邏輯 ---
         let currentModuleId = 1;
         let gameState = { money: 100000, scene: 'start' };
 
-        // --- 初始化與渲染 ---
         function init() {
             renderSidebar();
             loadModule(1);
@@ -448,8 +444,8 @@
             renderSidebar();
             const module = curriculum.find(m => m.id === id);
             const contentDiv = document.getElementById('contentArea');
+            const aiPanel = document.getElementById('aiPanel');
 
-            // 渲染標題區
             let html = `
                 <div class="header-section">
                     <h2>${module.title}</h2>
@@ -457,9 +453,7 @@
                 </div>
             `;
 
-            // 判斷模式
             if (module.type === 'study') {
-                // 學習模式：渲染卡片
                 html += `<div class="card-grid">`;
                 module.cards.forEach((card, index) => {
                     html += `
@@ -471,31 +465,24 @@
                     `;
                 });
                 html += `</div>`;
+                aiPanel.style.display = 'block'; // 學習模式顯示 AI
             } else {
-                // 遊戲模式：渲染遊戲容器
-                html += `
-                    <div class="game-panel" id="gamePanel">
-                        </div>
-                `;
-                // 稍微延遲執行遊戲渲染，確保 DOM 已建立
+                html += `<div class="game-panel" id="gamePanel"></div>`;
                 setTimeout(() => {
                     gameState = { money: 100000, scene: module.startScene };
                     renderGameScene(module.startScene);
                 }, 0);
+                aiPanel.style.display = 'none'; // 遊戲模式隱藏 AI (避免作弊)
             }
-
             contentDiv.innerHTML = html;
         }
 
-        // --- 學習模式邏輯 (Modal) ---
         function openDetail(moduleId, cardIndex) {
             const module = curriculum.find(m => m.id === moduleId);
             const card = module.cards[cardIndex];
-            
             document.getElementById('modalTitle').innerText = card.title;
             const body = document.getElementById('modalBody');
             body.innerHTML = '';
-
             card.details.forEach(detail => {
                 body.innerHTML += `
                     <div class="detail-block">
@@ -504,7 +491,6 @@
                     </div>
                 `;
             });
-
             document.getElementById('detailModal').style.display = 'flex';
         }
 
@@ -512,11 +498,9 @@
             document.getElementById('detailModal').style.display = 'none';
         }
 
-        // --- 遊戲模式邏輯 ---
         function renderGameScene(sceneId) {
             const scene = gameScenes[sceneId];
             const panel = document.getElementById('gamePanel');
-            
             if (!panel) return;
 
             let html = `
@@ -528,24 +512,60 @@
                     <div class="scene-text">${scene.text}</div>
                     <div style="width:100%">
             `;
-
             scene.choices.forEach(choice => {
                 html += `<button class="choice-btn" onclick="makeChoice('${choice.next}', ${choice.money}, '${choice.msg}')">${choice.txt}</button>`;
             });
-
             html += `</div></div>`;
             panel.innerHTML = html;
         }
 
         function makeChoice(nextScene, moneyChange, msg) {
             gameState.money += moneyChange;
-            alert(msg); // 簡單的回饋提示
+            alert(msg);
             renderGameScene(nextScene);
+        }
+
+        // --- Google Gemini AI ---
+        async function askGemini() {
+            const input = document.getElementById('userPrompt').value;
+            const responseDiv = document.getElementById('aiResponse');
+            
+            if (!input.trim()) { alert("請輸入問題！"); return; }
+
+            responseDiv.style.display = 'block';
+            responseDiv.innerHTML = "⏳ AI 正在思考中...";
+            
+            // 使用 Gemini 3 Flash Preview
+            const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=" + API_KEY;
+            
+            const payload = {
+                contents: [{
+                    parts: [{ text: input + " (請用繁體中文回答，並且做為一個專業的理財顧問，回答簡短有力並盡可能多視角分析)" }]
+                }]
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (data.candidates && data.candidates[0].content) {
+                    const aiText = data.candidates[0].content.parts[0].text;
+                    responseDiv.innerHTML = `<strong>💡 顧問建議：</strong><br>${aiText}`;
+                } else {
+                    responseDiv.innerHTML = "❌ 發生錯誤 (可能因為模型太新或不穩定)，請稍後再試。";
+                    console.error("API Error:", data);
+                }
+            } catch (error) {
+                responseDiv.innerHTML = "❌ 連線失敗，請檢查網路。";
+                console.error("Fetch Error:", error);
+            }
         }
 
         // 啟動
         init();
-
     </script>
 </body>
 </html>
