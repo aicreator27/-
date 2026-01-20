@@ -65,7 +65,7 @@
             flex: 1;
             padding: 40px;
             max-width: 1200px;
-            padding-bottom: 100px;
+            padding-bottom: 150px;
         }
 
         .header-section { margin-bottom: 30px; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
@@ -118,17 +118,46 @@
             gap: 5px;
         }
 
-        /* --- AI 區塊 --- */
-        .ai-panel {
+        /* --- 工具面板 (AI + 計算機) --- */
+        .tools-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
             margin-top: 40px;
+        }
+
+        /* RWD: 手機版變成單欄 */
+        @media (max-width: 900px) {
+            .tools-container { grid-template-columns: 1fr; }
+        }
+
+        .tool-panel {
             padding: 25px;
-            background: linear-gradient(to right, #e0f2fe, #f0f9ff);
+            background: white;
             border-radius: 16px;
-            border: 2px dashed #0284c7;
+            border: 1px solid #e2e8f0;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
 
-        /* --- 詳情彈窗 (Modal) --- */
+        .tool-title {
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+        }
+
+        /* 計算機樣式 */
+        .calc-input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+        .calc-label { font-size: 0.9rem; color: #64748b; margin-bottom: 4px; display: block; }
+        .calc-result { background: #f0fdfa; padding: 15px; border-radius: 8px; text-align: center; margin-top: 10px; }
+        .calc-result span { display: block; font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+        .calc-btn { width: 100%; background: var(--secondary); color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .calc-btn:hover { background: var(--primary); }
+
+        /* --- 詳情彈窗 --- */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -220,7 +249,6 @@
         }
         .choice-btn:hover { background: #f59e0b; color: #1e293b; transform: translateX(5px); }
 
-        /* RWD */
         @media (max-width: 768px) {
             .sidebar { display: none; }
             .main-content { margin-left: 0; padding: 20px; }
@@ -240,16 +268,50 @@
     <main class="main-content">
         <div id="contentArea"></div>
 
-        <div class="ai-panel" id="aiPanel">
-            <h3 style="color:#0369a1; display:flex; align-items:center; gap:10px;">
-                🤖 AI 投資顧問 <span style="font-size:0.8rem; color:#64748b; font-weight:normal;">(Powered by Gemini 3 Flash)</span>
-            </h3>
-            <textarea id="userPrompt" style="width: 100%; height: 80px; margin: 15px 0; padding: 10px; border:1px solid #bae6fd; border-radius:8px;" placeholder="輸入你的問題，例如：什麼是機會成本？我該怎麼配置資產？"></textarea>
-            <button onclick="askGemini()" style="background: #0284c7; color: white; padding: 10px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight:bold;">發送請求</button>
+        <div class="tools-container" id="toolsPanel">
             
-            <div id="aiResponse" style="margin-top: 15px; color: #334155; white-space: pre-wrap; display: none; background:white; padding:15px; border-radius:8px; border:1px solid #e2e8f0;">
-                正在分析中...
+            <div class="tool-panel">
+                <div class="tool-title">
+                    <span>🤖 AI 投資顧問</span>
+                    <span style="font-size:0.8rem; color:#64748b; font-weight:normal;">(Gemini 1.5 Flash)</span>
+                </div>
+                <input type="password" id="apiKeyInput" placeholder="在此貼上你的 API Key (不會被儲存)" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #f59e0b; border-radius:6px; background:#fffbeb;">
+                
+                <textarea id="userPrompt" style="width: 100%; height: 100px; padding: 10px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:10px;" placeholder="輸入問題，例如：什麼是機會成本？我有 10 萬該怎麼配置？"></textarea>
+                <button onclick="askGemini()" style="width:100%; background: #0284c7; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight:bold;">發送請求</button>
+                <div id="aiResponse" style="margin-top: 15px; color: #334155; white-space: pre-wrap; font-size:0.95rem;"></div>
             </div>
+
+            <div class="tool-panel">
+                <div class="tool-title">
+                    <span>🛡️ 風險倉位計算機</span>
+                </div>
+                <div>
+                    <label class="calc-label">總資金 (NT$)</label>
+                    <input type="number" id="totalCapital" class="calc-input" value="100000">
+                    
+                    <label class="calc-label">單筆最大虧損 (%)</label>
+                    <input type="number" id="riskPercent" class="calc-input" value="2" placeholder="通常設 2%">
+                    
+                    <div style="display:flex; gap:10px;">
+                        <div style="flex:1">
+                            <label class="calc-label">買入價</label>
+                            <input type="number" id="entryPrice" class="calc-input">
+                        </div>
+                        <div style="flex:1">
+                            <label class="calc-label">停損價</label>
+                            <input type="number" id="stopLossPrice" class="calc-input">
+                        </div>
+                    </div>
+
+                    <button class="calc-btn" onclick="calculatePosition()">計算可買股數</button>
+
+                    <div class="calc-result">
+                        建議股數 <span id="resultShares">0</span>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </main>
 
@@ -264,16 +326,12 @@
     </div>
 
     <script>
-        // --- 🔴 API KEY 設定 ---
-        const API_KEY = "AIzaSyBhTKeTX_Eoy-ynJEEoahteTWxYOB0Kgjw"; 
+        // --- 🔴 注意：這裡不需要 API_KEY 變數了，因為改用輸入框讀取 ---
 
         // --- 資料庫：課程 + 遊戲劇本 ---
         const curriculum = [
             {
-                id: 1,
-                type: 'study',
-                title: "第一週：理財基本功",
-                desc: "在投資之前，先學會守住錢。了解會計基礎與債務管理。",
+                id: 1, type: 'study', title: "第一週：理財基本功", desc: "在投資之前，先學會守住錢。了解會計基礎與債務管理。",
                 cards: [
                     { title: "損益表 (P&L)", tag: "會計", details: [{sub:"定義", txt:"損益 = 營收 - 成本。"}, {sub:"應用", txt:"如果你的月薪扣掉花費是負的，代表你在吃老本。"}] },
                     { title: "緊急備用金", tag: "防禦", details: [{sub:"定義", txt:"存下 3-6 個月的必要生活費。"}, {sub:"目的", txt:"失業或生病時的救命錢，絕不能拿去投資。"}] },
@@ -281,10 +339,7 @@
                 ]
             },
             {
-                id: 2,
-                type: 'study',
-                title: "第二週：金融市場與工具",
-                desc: "認識超市裡賣什麼菜：股票、債券與基金。",
+                id: 2, type: 'study', title: "第二週：金融市場與工具", desc: "認識超市裡賣什麼菜：股票、債券與基金。",
                 cards: [
                     { title: "股票", tag: "高風險", details: [{sub:"定義", txt:"擁有公司一部分所有權。"}, {sub:"獲利", txt:"賺股價價差 + 股利分紅。"}] },
                     { title: "債券", tag: "低風險", details: [{sub:"定義", txt:"借錢給政府或公司，對方付你利息。"}, {sub:"功能", txt:"資產配置中的安全氣囊。"}] },
@@ -292,10 +347,7 @@
                 ]
             },
             {
-                id: 3,
-                type: 'study',
-                title: "第三週：深入基本面",
-                desc: "【進階】如何判斷一家公司真正的價值？",
+                id: 3, type: 'study', title: "第三週：深入基本面", desc: "【進階】如何判斷一家公司真正的價值？",
                 cards: [
                     { title: "本益比 (PE)", tag: "估值", details: [{sub:"公式", txt:"股價 / EPS。"}, {sub:"意義", txt:"買進這家公司，大概要幾年才能回本？"}] },
                     { title: "淨值 (Book Value)", tag: "體質", details: [{sub:"公式", txt:"資產 - 負債。"}, {sub:"意義", txt:"公司清算後股東能拿回多少錢。"}] },
@@ -303,44 +355,15 @@
                 ]
             },
             {
-                id: 4,
-                type: 'study',
-                title: "第四週：富人的思維模型 (ESBI)",
-                desc: "為什麼努力工作不一定會變有錢？因為你處在錯誤的象限。",
+                id: 4, type: 'study', title: "第四週：富人的思維模型 (ESBI)", desc: "為什麼努力工作不一定會變有錢？因為你處在錯誤的象限。",
                 cards: [
-                    {
-                        title: "ESBI 象限",
-                        tag: "羅伯特·清崎",
-                        details: [
-                            { sub: "E (雇員)", txt: "用時間換錢，手停口停。" },
-                            { sub: "S (自僱者)", txt: "用專業換錢，依然是自己打工。" },
-                            { sub: "B (企業主)", txt: "用系統賺錢，離開公司依然在運轉。" },
-                            { sub: "I (投資者)", txt: "用錢賺錢，指數級增長。" }
-                        ]
-                    },
-                    {
-                        title: "窮人 vs 富人思維",
-                        tag: "心態",
-                        details: [
-                            { sub: "金錢觀", txt: "窮人想著怎麼花錢，富人想著怎麼讓錢生錢 (ROI)。" },
-                            { sub: "風險觀", txt: "窮人害怕風險選安穩，富人管理風險找機會。" }
-                        ]
-                    },
-                    {
-                        title: "機會成本",
-                        tag: "決策",
-                        details: [
-                            { sub: "定義", txt: "為了選擇 A 而必須放棄的 B 的價值。" },
-                            { sub: "例子", txt: "花時間排隊買拉麵，成本不只是錢，還有你的時間價值。" }
-                        ]
-                    }
+                    { title: "ESBI 象限", tag: "羅伯特·清崎", details: [{ sub: "E (雇員)", txt: "用時間換錢，手停口停。" }, { sub: "S (自僱者)", txt: "用專業換錢，依然是自己打工。" }, { sub: "B (企業主)", txt: "用系統賺錢，離開公司依然在運轉。" }, { sub: "I (投資者)", txt: "用錢賺錢，指數級增長。" }] },
+                    { title: "窮人 vs 富人思維", tag: "心態", details: [{ sub: "金錢觀", txt: "窮人想著怎麼花錢，富人想著怎麼讓錢生錢 (ROI)。" }, { sub: "風險觀", txt: "窮人害怕風險選安穩，富人管理風險找機會。" }] },
+                    { title: "機會成本", tag: "決策", details: [{ sub: "定義", txt: "為了選擇 A 而必須放棄的 B 的價值。" }, { sub: "例子", txt: "花時間排隊買拉麵，成本不只是錢，還有你的時間價值。" }] }
                 ]
             },
             {
-                id: 5,
-                type: 'study',
-                title: "第五週：行為金融學",
-                desc: "賠錢通常是因為心理素質。Debug 人類大腦的原始設定。",
+                id: 5, type: 'study', title: "第五週：行為金融學", desc: "賠錢通常是因為心理素質。Debug 人類大腦的原始設定。",
                 cards: [
                     { title: "損失趨避", tag: "Bug", details: [{ sub: "現象", txt: "賠錢的痛苦是賺錢快樂的 2 倍。" }, { sub: "後果", txt: "散戶往往太早賣掉賺錢股，死抱著賠錢股。" }] },
                     { title: "沈沒成本", tag: "陷阱", details: [{ sub: "定義", txt: "已發生無法回收的成本。" }, { sub: "策略", txt: "決策只看未來，不看過去賠了多少。" }] },
@@ -348,10 +371,7 @@
                 ]
             },
             {
-                id: 6,
-                type: 'study',
-                title: "第六週：週期的力量",
-                desc: "市場像呼吸一樣有週期。沒什麼是確定的，除了週期。",
+                id: 6, type: 'study', title: "第六週：週期的力量", desc: "市場像呼吸一樣有週期。沒什麼是確定的，除了週期。",
                 cards: [
                     { title: "鐘擺理論", tag: "霍華·馬克斯", details: [{ sub: "概念", txt: "市場情緒永遠在極度樂觀與悲觀間擺盪。" }, { sub: "應用", txt: "人棄我取，人取我與。" }] },
                     { title: "均值回歸", tag: "數學法則", details: [{ sub: "定義", txt: "漲多必跌，跌多必漲。" }, { sub: "策略", txt: "不要追高乖離率過大的資產。" }] },
@@ -359,11 +379,7 @@
                 ]
             },
             {
-                id: 7,
-                type: 'game', 
-                title: "第七週：人生模擬實戰 (最終試煉)",
-                desc: "模擬未來 10 年的決策，看看你是否能避開人性陷阱，實現財富自由。",
-                startScene: 'start'
+                id: 7, type: 'game', title: "第七週：人生模擬實戰 (最終試煉)", desc: "模擬未來 10 年的決策，看看你是否能避開人性陷阱，實現財富自由。", startScene: 'start'
             }
         ];
 
@@ -394,24 +410,25 @@
                 icon: '📈', text: '錢投入股市，結果遇到金融海嘯，帳面虧損 40%！',
                 choices: [
                     { txt: '嚇死了，賣掉止損 (損失趨避)', next: 'scene_3', money: -100000, msg: '在最低點賣出，實現虧損。' },
-                    { txt: '相信基本面，繼續持有', next: 'rich_path', money: 0, msg: '忍住恐慌。兩年後市場反彈資產翻倍。' }
+                    { txt: '相信基本面，繼續持有', next: 'rich_path', money: 0, msg: '忍住恐慌。這需要極大的心理素質。' }
                 ]
             },
             'rich_path': {
                 icon: '💰', text: '35 歲，資產突破 500 萬。這時新聞狂報「全球經濟崩盤」...',
                 choices: [
-                    { txt: '我有做資產配置，不理會', next: 'market_crash_test', money: 0, msg: '準備好迎接考驗吧。' }
+                    { txt: '我有做資產配置，不理會', next: 'market_crash_test', money: 0, msg: '真正的考驗現在才開始。' }
                 ]
             },
             'market_crash_test': {
-                icon: '📉', text: '【系統廣播】史詩級崩盤！你的朋友都在拋售，你該怎麼辦？',
+                icon: '📉', text: '【系統廣播】史詩級崩盤！新聞每天都報世界末日，你的朋友都在拋售，你該怎麼辦？',
                 choices: [
                     { txt: '跟著賣掉 (從眾心理)', next: 'panic_sell', money: -500000, msg: '你因為恐慌而賣在低點。' },
                     { txt: '動用備用金加碼 (貪婪)', next: 'aggressive_buy', money: 0, msg: '大膽接刀，風險極高。' },
-                    { txt: '關掉新聞，去散步 (鈍感力)', next: 'happy_end', money: 200000, msg: '一年後市場創新高，你什麼都沒做卻贏了。' }
+                    { txt: '關掉新聞，刪掉 APP，去公園散步', next: 'hold_on', money: 0, msg: '你選擇了「忽視短期波動」。' }
                 ]
             },
             'panic_sell': { icon: '💸', text: '賣光後股市 V 型反轉創新高，你只能看著別人賺錢。', choices: [{ txt: '學到一課', next: 'start', money: 0, msg: '這堂課很貴。' }] },
+            'hold_on': { icon: '🧘', text: '一年過去了。市場回到了起跌點，甚至還漲了一些。你什麼都沒做，但你的資產比那些忙進忙出的人都多。', choices: [{ txt: '這就是「鈍感力」的勝利', next: 'happy_end', money: 200000, msg: '投資是一場馬拉松。' }] },
             'aggressive_buy': { icon: '🎰', text: '運氣好市場見底，你大賺一筆。但下次可能就沒這麼好運。', choices: [{ txt: '見好就收', next: 'happy_end', money: 1000000, msg: '富貴險中求。' }] },
             'scene_3': { icon: '😐', text: '35 歲，資產平平。', choices: [{ txt: '重新開始', next: 'start', money: 0, msg: '重來一次。' }] },
             'bad_end': { icon: '💸', text: '破產結局。', choices: [{ txt: '重新挑戰', next: 'start', money: 0, msg: '記得存備用金！' }] },
@@ -444,7 +461,7 @@
             renderSidebar();
             const module = curriculum.find(m => m.id === id);
             const contentDiv = document.getElementById('contentArea');
-            const aiPanel = document.getElementById('aiPanel');
+            const toolsPanel = document.getElementById('toolsPanel');
 
             let html = `
                 <div class="header-section">
@@ -465,14 +482,14 @@
                     `;
                 });
                 html += `</div>`;
-                aiPanel.style.display = 'block'; // 學習模式顯示 AI
+                toolsPanel.style.display = 'grid'; // 學習模式顯示工具
             } else {
                 html += `<div class="game-panel" id="gamePanel"></div>`;
                 setTimeout(() => {
                     gameState = { money: 100000, scene: module.startScene };
                     renderGameScene(module.startScene);
                 }, 0);
-                aiPanel.style.display = 'none'; // 遊戲模式隱藏 AI (避免作弊)
+                toolsPanel.style.display = 'none'; // 遊戲模式隱藏工具
             }
             contentDiv.innerHTML = html;
         }
@@ -498,6 +515,7 @@
             document.getElementById('detailModal').style.display = 'none';
         }
 
+        // --- 遊戲邏輯 ---
         function renderGameScene(sceneId) {
             const scene = gameScenes[sceneId];
             const panel = document.getElementById('gamePanel');
@@ -525,18 +543,43 @@
             renderGameScene(nextScene);
         }
 
-        // --- Google Gemini AI ---
+        // --- 風險計算機邏輯 ---
+        function calculatePosition() {
+            const total = parseFloat(document.getElementById('totalCapital').value);
+            const risk = parseFloat(document.getElementById('riskPercent').value) / 100;
+            const entry = parseFloat(document.getElementById('entryPrice').value);
+            const stop = parseFloat(document.getElementById('stopLossPrice').value);
+
+            if (!entry || !stop || entry <= stop) {
+                document.getElementById('resultShares').innerText = "價格錯誤";
+                return;
+            }
+
+            const maxLoss = total * risk; // 這一單最多只能賠多少錢
+            const lossPerShare = entry - stop; // 每一股會賠多少錢
+            const shares = Math.floor(maxLoss / lossPerShare); // 能買幾股
+
+            document.getElementById('resultShares').innerText = shares + " 股";
+        }
+
+        // --- Google Gemini AI (安全版：從輸入框讀取 Key) ---
         async function askGemini() {
+            // 1. 抓取問題
             const input = document.getElementById('userPrompt').value;
             const responseDiv = document.getElementById('aiResponse');
             
+            // 2. 抓取輸入框裡的 API Key
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const API_KEY = apiKeyInput ? apiKeyInput.value.trim() : "";
+
             if (!input.trim()) { alert("請輸入問題！"); return; }
+            if (!API_KEY) { alert("請輸入 API Key 喔！"); return; }
 
             responseDiv.style.display = 'block';
             responseDiv.innerHTML = "⏳ AI 正在思考中...";
             
-            // 使用 Gemini 3 Flash Preview
-            const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=" + API_KEY;
+            // 使用最穩定的 1.5 Flash (避免 404)
+            const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + API_KEY;
             
             const payload = {
                 contents: [{
@@ -551,15 +594,18 @@
                     body: JSON.stringify(payload)
                 });
                 const data = await response.json();
-                if (data.candidates && data.candidates[0].content) {
+                
+                if (data.error) {
+                    // 如果 API 回傳錯誤 (例如 Key 無效)
+                    responseDiv.innerHTML = `❌ 錯誤：${data.error.message}`;
+                } else if (data.candidates && data.candidates[0].content) {
                     const aiText = data.candidates[0].content.parts[0].text;
                     responseDiv.innerHTML = `<strong>💡 顧問建議：</strong><br>${aiText}`;
                 } else {
-                    responseDiv.innerHTML = "❌ 發生錯誤 (可能因為模型太新或不穩定)，請稍後再試。";
-                    console.error("API Error:", data);
+                    responseDiv.innerHTML = "❌ 發生未知錯誤，請稍後再試。";
                 }
             } catch (error) {
-                responseDiv.innerHTML = "❌ 連線失敗，請檢查網路。";
+                responseDiv.innerHTML = "❌ 連線失敗，請檢查網路或 Key 是否正確。";
                 console.error("Fetch Error:", error);
             }
         }
