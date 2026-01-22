@@ -1,0 +1,2702 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>金融素養特訓班 | 觀念 x 實戰模擬</title>
+    <style>
+        /* 原有的CSS保持不變，只新增以下樣式 */
+        
+        /* 詳細影響分析彈窗 */
+        .impact-detail-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .impact-detail-content {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 20px;
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .impact-detail-header {
+            padding: 20px;
+            background: linear-gradient(90deg, #f8fafc, #f0f9ff);
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .impact-detail-body {
+            padding: 25px;
+            line-height: 1.6;
+            color: #334155;
+        }
+        
+        .impact-period {
+            margin-bottom: 20px;
+        }
+        
+        .impact-period-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .impact-period-desc {
+            color: #475569;
+            line-height: 1.6;
+            padding-left: 24px;
+        }
+        
+        /* 可點擊的影響標籤 */
+        .impact-label {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .impact-label:hover {
+            background: rgba(0, 0, 0, 0.05);
+            transform: scale(1.05);
+        }
+        
+        /* AI分析面板 */
+        .ai-analysis-panel {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #f0fdfa 100%);
+            border-radius: 12px;
+            border: 1px solid #bae6fd;
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        .ai-analysis-panel.active {
+            display: block;
+        }
+        
+        .analysis-title {
+            color: #0369a1;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* 原有的CSS保持不變，只新增以上樣式 */
+        
+        :root {
+            --primary: #0f766e;
+            --secondary: #115e59;
+            --accent: #f59e0b;
+            --bg: #f0fdfa;
+            --text: #134e4a;
+            --sidebar-width: 280px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; }
+        
+        body { 
+            background-color: var(--bg); 
+            color: var(--text); 
+            display: flex; 
+            min-height: 100vh; 
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- 側邊欄 --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: white;
+            padding: 20px;
+            border-right: 1px solid #ccfbf1;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-sub { 
+            font-size: 0.8rem; 
+            color: #64748b; 
+            margin-bottom: 30px; 
+            padding-left: 5px; 
+        }
+
+        .module-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            color: #64748b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-item:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, transparent, rgba(15, 118, 110, 0.1), transparent);
+            transition: width 0.6s ease;
+        }
+
+        .module-item:hover:before {
+            width: 100%;
+        }
+
+        .module-item:hover { 
+            background: #f0fdfa; 
+            color: var(--primary); 
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.1);
+        }
+        
+        .module-item.active { 
+            background: var(--primary); 
+            color: white; 
+            box-shadow: 0 4px 20px rgba(15, 118, 110, 0.3);
+            transform: translateX(5px);
+            animation: pulse 2s infinite;
+        }
+
+        /* --- 主內容區 --- */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 40px;
+            max-width: 1200px;
+            padding-bottom: 150px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .header-section { 
+            margin-bottom: 30px; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08);
+            animation: slideUp 0.5s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-section:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        .header-section h2 { 
+            font-size: 2.2rem; 
+            margin-bottom: 15px; 
+            color: var(--primary); 
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header-section p { 
+            color: #475569; 
+            line-height: 1.8; 
+            font-size: 1.05rem;
+        }
+
+        /* --- 卡片網格 --- */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        .flashcard {
+            background: white;
+            height: 220px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 2px solid #f0fdfa;
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+            transform: translateY(0);
+            opacity: 1;
+            animation: cardFloat 0.6s ease-out forwards;
+        }
+
+        .flashcard:nth-child(1) { animation-delay: 0.1s; }
+        .flashcard:nth-child(2) { animation-delay: 0.2s; }
+        .flashcard:nth-child(3) { animation-delay: 0.3s; }
+        .flashcard:nth-child(4) { animation-delay: 0.4s; }
+        
+        .flashcard:hover { 
+            transform: translateY(-10px) scale(1.02); 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15); 
+            border-color: var(--primary);
+        }
+        
+        .flashcard:active {
+            transform: translateY(-5px) scale(0.98);
+        }
+        
+        .tag {
+            font-size: 0.75rem;
+            padding: 6px 12px;
+            background: linear-gradient(90deg, #ccfbf1, #a7f3d0);
+            color: var(--primary);
+            border-radius: 20px;
+            width: fit-content;
+            margin-bottom: 15px;
+            font-weight: bold;
+            animation: tagPulse 2s infinite;
+        }
+
+        .click-hint {
+            margin-top: auto;
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .flashcard:hover .click-hint {
+            transform: translateX(5px);
+            color: var(--accent);
+        }
+
+        /* --- 人生模擬專用卡片樣式 --- */
+        .life-card {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .life-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, transparent 50%, rgba(245, 158, 11, 0.1) 50%);
+        }
+
+        .life-tag {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+            color: white;
+            animation: lifeTagPulse 2s infinite;
+        }
+
+        .age-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--primary);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 6px rgba(15, 118, 110, 0.3);
+        }
+
+        /* --- 選擇卡片樣式 --- */
+        .choice-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .choice-card:hover {
+            transform: translateX(5px);
+            border-color: var(--primary);
+            box-shadow: 0 5px 15px rgba(15, 118, 110, 0.1);
+        }
+
+        .choice-card.selected {
+            border-color: var(--primary);
+            background: #f0fdfa;
+            box-shadow: 0 5px 15px rgba(15, 118, 110, 0.15);
+        }
+
+        .choice-card.selected:before {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--primary);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .choice-title {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .choice-outcome {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .outcome-box {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .outcome-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .outcome-label {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .outcome-value {
+            font-size: 0.9rem;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+        .positive {
+            color: #059669;
+        }
+
+        .negative {
+            color: #dc2626;
+        }
+
+        .neutral {
+            color: #6b7280;
+        }
+
+        /* --- AI 工具面板 --- */
+        .ai-tool-panel {
+            background: linear-gradient(135deg, #f0f9ff 0%, #f0fdfa 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 40px 0;
+            border: 1px solid #bae6fd;
+            box-shadow: 0 10px 30px rgba(2, 132, 199, 0.15);
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .ai-tool-panel:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #0284c7, #0f766e);
+        }
+
+        .tool-title {
+            color: #0369a1;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.2rem;
+        }
+
+        .tool-title span {
+            background: linear-gradient(90deg, #0369a1, #0f766e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .ai-input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 15px;
+            border: 2px solid #bae6fd;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .ai-input:focus {
+            outline: none;
+            border-color: #0284c7;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);
+        }
+
+        .ai-textarea {
+            width: 100%;
+            height: 120px;
+            padding: 14px;
+            border: 2px solid #bae6fd;
+            border-radius: 12px;
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .ai-textarea:focus {
+            outline: none;
+            border-color: #0284c7;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);
+        }
+
+        .ai-button {
+            width: 100%;
+            background: linear-gradient(90deg, #0284c7, #0d9488);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(2, 132, 199, 0.3);
+        }
+
+        .ai-button:active {
+            transform: translateY(0);
+        }
+
+        .ai-button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .ai-button:hover:before {
+            left: 100%;
+        }
+
+        .ai-response {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            min-height: 60px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* --- 詳情彈窗 --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            border-radius: 20px;
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: center bottom;
+        }
+
+        .modal-header {
+            padding: 25px 30px;
+            background: linear-gradient(90deg, #f8fafc, #f0f9ff);
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-body {
+            padding: 30px;
+            overflow-y: auto;
+            line-height: 1.8;
+            color: #334155;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .close-btn { 
+            background: none; 
+            border: none; 
+            font-size: 2rem; 
+            cursor: pointer; 
+            color: #94a3b8; 
+            line-height: 1;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-btn:hover { 
+            color: #ef4444; 
+            background: #fef2f2;
+            transform: rotate(90deg);
+        }
+
+        .detail-block { 
+            margin-bottom: 30px; 
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        .detail-title { 
+            font-size: 1.1rem; 
+            font-weight: 700; 
+            color: var(--primary); 
+            margin-bottom: 12px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px;
+            padding: 12px 16px;
+            background: #f0fdfa;
+            border-radius: 10px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .detail-title svg {
+            animation: iconPulse 2s infinite;
+        }
+
+        /* --- 滑桿控制區域 --- */
+        .module-slider-container {
+            margin: 25px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: none;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .slider-info {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .slider-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .slider-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .slider-button:hover {
+            background: var(--secondary);
+            transform: scale(1.1);
+        }
+
+        .slider-button:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .card-slider {
+            display: flex;
+            overflow-x: auto;
+            gap: 20px;
+            padding: 10px 5px;
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) #f1f5f9;
+        }
+
+        .card-slider::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .card-slider::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        .card-slider::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        /* 當卡片數量多於4個時，啟用滑桿模式 */
+        @media (min-width: 1200px) {
+            .card-grid.has-many-cards {
+                display: none;
+            }
+            
+            .module-slider-container.visible {
+                display: block;
+                animation: slideUp 0.5s ease-out;
+            }
+            
+            .card-slider .flashcard {
+                flex: 0 0 calc(25% - 15px);
+                min-width: 280px;
+                animation: none;
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        /* 平板：一行顯示2個 */
+        @media (min-width: 769px) and (max-width: 1199px) {
+            .card-slider .flashcard {
+                flex: 0 0 calc(50% - 10px);
+                min-width: 280px;
+            }
+        }
+
+        /* 手機：一行顯示1個 */
+        @media (max-width: 768px) {
+            .card-slider .flashcard {
+                flex: 0 0 100%;
+                min-width: 280px;
+            }
+        }
+
+        /* --- 動畫定義 --- */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        @keyframes cardFloat {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 4px 20px rgba(15, 118, 110, 0.3); }
+            50% { box-shadow: 0 4px 30px rgba(15, 118, 110, 0.5); }
+        }
+
+        @keyframes tagPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes lifeTagPulse {
+            0%, 100% { transform: scale(1); background: linear-gradient(90deg, #f59e0b, #d97706); }
+            50% { transform: scale(1.05); background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+        }
+
+        @keyframes modalSlideUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(50px) scale(0.9); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+        }
+
+        @keyframes slideIn {
+            from { 
+                opacity: 0; 
+                transform: translateX(-20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0); 
+            }
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes choiceSelect {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- 手機版樣式 --- */
+        .mobile-header {
+            display: none;
+            padding: 15px 20px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .hamburger {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: var(--primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger:hover {
+            background: #f0fdfa;
+        }
+
+        .sidebar-mobile {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            padding: 20px;
+            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            overflow-y: auto;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.15);
+        }
+
+        .sidebar-mobile.active {
+            left: 0;
+        }
+
+        .sidebar-mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        .sidebar-mobile-overlay.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { 
+                transform: translateX(-100%);
+            }
+            
+            .mobile-header {
+                display: flex;
+            }
+            
+            .sidebar-mobile {
+                display: block;
+            }
+            
+            .main-content { 
+                margin-left: 0; 
+                padding: 90px 20px 40px 20px; 
+                width: 100%;
+            }
+            
+            .header-section {
+                padding: 20px;
+            }
+            
+            .header-section h2 {
+                font-size: 1.8rem;
+            }
+            
+            .card-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .flashcard {
+                height: auto;
+                min-height: 200px;
+            }
+            
+            .ai-tool-panel {
+                padding: 20px;
+                margin: 30px 0;
+            }
+            
+            .choice-outcome {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 桌機大螢幕 */
+        @media (min-width: 1200px) {
+            .card-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        /* 平板 */
+        @media (min-width: 769px) and (max-width: 1199px) {
+            .card-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 手機版漢堡選單 -->
+    <div class="mobile-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <button class="hamburger" onclick="toggleMobileMenu()">☰</button>
+            <div>
+                <div style="font-weight:bold; color:var(--primary);">🚀 財富特訓班</div>
+                <div style="font-size:0.8rem; color:#64748b;">從觀念到模擬實戰</div>
+            </div>
+        </div>
+        <div style="font-size:0.9rem; color:#64748b; font-weight:500;">金融素養</div>
+    </div>
+
+    <!-- 手機版側邊欄遮罩 -->
+    <div class="sidebar-mobile-overlay" onclick="closeMobileMenu()"></div>
+
+    <!-- 手機版側邊欄 -->
+    <div class="sidebar-mobile">
+        <div style="margin-bottom:20px;">
+            <div class="brand">🚀 財富特訓班</div>
+            <div class="brand-sub">從觀念到模擬實戰</div>
+        </div>
+        <ul id="moduleListMobile"></ul>
+    </div>
+
+    <!-- 桌機版側邊欄 -->
+    <nav class="sidebar">
+        <div class="brand">🚀 財富特訓班</div>
+        <div class="brand-sub">從觀念到模擬實戰</div>
+        <ul id="moduleList"></ul>
+    </nav>
+
+    <!-- 主內容區 -->
+    <main class="main-content">
+        <div id="contentArea"></div>
+    </main>
+
+    <!-- 詳情彈窗 -->
+    <div class="modal-overlay" id="detailModal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 style="font-size:1.5rem; color:var(--primary);" id="modalTitle">標題</h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- 詳細影響分析彈窗 -->
+    <div class="impact-detail-modal" id="impactDetailModal" onclick="closeImpactDetail(event)">
+        <div class="impact-detail-content" onclick="event.stopPropagation()">
+            <div class="impact-detail-header">
+                <h3 style="font-size:1.2rem; color:var(--primary);" id="impactModalTitle">影響分析</h3>
+                <button class="close-btn" onclick="closeImpactDetail()">×</button>
+            </div>
+            <div class="impact-detail-body" id="impactModalBody">
+                <!-- 動態生成影響詳細內容 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ============================================================
+    // 💰 財富素養資料庫 - 完整七個模組（已根據建議修改）
+    // ============================================================
+
+    // 模組0：投資入門篇
+    const curriculumPart0 = [
+        {
+            id: 0,
+            title: "💰 投資入門篇",
+            desc: "從零開始建立正確的投資觀念，了解基本術語與市場運作，打好穩健理財的基礎",
+            cards: [
+                {
+                    title: "投資 vs 投機 vs 賭博",
+                    tag: "心態建立",
+                    intro: "釐清這三個容易被混淆的概念，是成為成功投資者的第一步。",
+                    details: [
+                        {sub:"投資", txt:"👉 著重於資產的內在價值\n👉 有現金流或長期增值潛力\n👉 風險經過評估與分散\n👉 時間是朋友（複利效應）"},
+                        {sub:"投機", txt:"👉 著重於價格變動\n👉 試圖預測市場情緒\n👉 風險較高，可能短期獲利\n👉 時間是敵人（時間價值衰減）"},
+                        {sub:"賭博", txt:"👉 完全依賴運氣\n👉 期望值為負（莊家優勢）\n👉 沒有內在價值分析\n👉 長期必定虧損"}
+                    ],
+                    case: "【巴菲特智慧】『投資是預測資產未來生產現金流的能力；投機是預測市場心理。』真正的投資者專注於企業價值，而非股價波動。"
+                },
+                {
+                    title: "複利：世界第八大奇蹟",
+                    tag: "核心觀念",
+                    intro: "愛因斯坦說複利是世界第八大奇蹟。理解時間的威力，是財富累積的關鍵。",
+                    details: [
+                        {sub:"複利公式", txt:"終值 = 本金 × (1 + 年化報酬率)^年數\n\n每月投資1萬元，年化報酬率8%：\n10年後：約184萬\n20年後：約592萬\n30年後：約1,500萬"},
+                        {sub:"72法則", txt:"快速估算資產翻倍時間：\n72 ÷ 年化報酬率 = 翻倍所需年數\n\n👉 報酬率6% → 12年翻倍\n👉 報酬率8% → 9年翻倍\n👉 報酬率12% → 6年翻倍"},
+                        {sub:"開始時間的重要性", txt:"25歲開始每月投資1萬，到65歲（共480萬本金）→ 約3,200萬\n35歲開始每月投資1萬，到65歲（共360萬本金）→ 約1,500萬\n\n晚10年開始，最終資產少一半以上！"}
+                    ]
+                },
+                {
+                    title: "風險與報酬的關係",
+                    tag: "基本原則",
+                    intro: "高報酬必然伴隨高風險，但高風險不一定帶來高報酬。理解這關係才能建立合理的投資期望。",
+                    details: [
+                        {sub:"風險的種類", txt:"👉 市場風險：整體市場下跌\n👉 信用風險：發行者違約\n👉 流動性風險：無法以合理價格賣出\n👉 匯率風險：外幣投資的匯率波動\n👉 通膨風險：購買力下降"},
+                        {sub:"風險報酬光譜", txt:"低風險低報酬：定存、貨幣基金\n中低風險：投資級債券 (需注意利率風險，升息時長債價格會大幅下跌)、REITs\n中風險：平衡型基金、藍籌股\n中高風險：成長股、高收益債\n高風險：期貨、選擇權、加密貨幣"},
+                        {sub:"個人風險承受度", txt:"考量因素：\n👉 年齡與投資期間\n👉 財務目標與時間\n👉 收入穩定性\n👉 心理承受能力\n👉 財務知識水平"}
+                    ]
+                },
+                {
+                    title: "基本投資工具介紹",
+                    tag: "工具認識",
+                    intro: "了解各種投資工具的性質、風險與適合對象，是建立投資組合的第一步。",
+                    details: [
+                        {sub:"股票", txt:"👉 性質：公司所有權的一部分\n👉 風險：中至高\n👉 預期報酬：長期較高\n👉 適合：長期投資者、能承受波動者"},
+                        {sub:"債券", txt:"👉 性質：借錢給政府或公司的憑證\n👉 風險：低至中 (需注意存續期間Duration風險，升息時長債價格會下跌)\n👉 預期報酬：穩定但較低\n👉 適合：保守投資者、退休規劃"},
+                        {sub:"基金/ETF", txt:"👉 性質：一籃子資產的集合\n👉 風險：取決於投資標的\n👉 預期報酬：取決於投資標的\n👉 適合：新手、希望分散風險者\n👉 注意：區分「市值型ETF(分散大盤)」與「主題/策略型ETF(集中風險)」，新手應優先選擇前者"}
+                    ]
+                }
+            ]
+        }
+    ];
+
+    // 模組1：財富心智篇
+    const curriculumPart1 = [
+        {
+            id: 1, 
+            title: "🏗️ 財富心智篇", 
+            desc: "建立正確的金錢觀、投資心態與決策框架，這是長期投資成功的基石",
+            cards: [
+                { 
+                    title: "複利效應 - 世界第八大奇蹟", 
+                    tag: "時間魔法", 
+                    intro: "愛因斯坦說：複利是世界第八大奇蹟。這不是快速致富的秘訣，而是讓時間成為你最好的朋友。",
+                    details: [
+                        {sub:"複利的威力", txt:"公式：終值 = 本金 × (1 + 年化報酬率)^年數。\n👉 每月投資1萬元，年化報酬率8%，30年後你會擁有超過1500萬。\n👉 秘密：不是追求暴利，而是持續投入 + 時間的指數成長。"},
+                        {sub:"72法則", txt:"快速計算資產翻倍時間：72 ÷ 年化報酬率。\n👉 報酬率6% → 12年翻倍\n👉 報酬率8% → 9年翻倍\n👉 報酬率12% → 6年翻倍"},
+                        {sub:"價值投資的複利思維", txt:"巴菲特的核心：找到能持續創造現金流的企業，讓盈餘再投資。\n👉 關鍵：公司有高的ROE且能保留盈餘再投資\n👉 你投資的不是股票，而是能「滾雪球」的生意"}
+                    ],
+                    case: "【實戰案例】巴菲特從1965年開始管理波克夏，平均年化報酬率約20%。55年後，1萬美元變成超過2.4億美元。這不是因為他每年都找到飆股，而是因為複利讓他的雪球越滾越大。"
+                },
+                { 
+                    title: "通膨與實質報酬 - 隱形稅收", 
+                    tag: "購買力風險", 
+                    intro: "錢放在銀行不動也安全嗎？錯！通貨膨脹像白蟻一樣，每年都在啃食你的購買力。",
+                    details: [
+                        {sub:"實質報酬率", txt:"公式：實質報酬率 ≈ 名目報酬率 - 通膨率\n👉 如果銀行定存1.5%，但通膨率2.5%，你的財富其實每年縮水1%。"},
+                        {sub:"購買力風險", txt:"100萬現在能買一台車，20年後可能只能買半台。\n👉 投資的底線：回報率必須跑贏通膨。\n👉 現金是短期最安全的資產，卻是長期最危險的資產。"},
+                        {sub:"抗通膨資產", txt:"👉 股票：公司可以漲價轉嫁成本（定價權）\n👉 房地產：租金通常隨通膨調整\n👉 黃金/原物料：貨幣貶值時的避風港"}
+                    ],
+                    case: "【歷史教訓】1970年代美國經歷「大停滯性通膨」，物價飛漲。當時持有現金或長天期債券的人購買力被血洗，而持有優質股票和硬資產的人保住了財富。"
+                },
+                { 
+                    title: "機會成本 - 每個選擇都有代價", 
+                    tag: "決策思維", 
+                    intro: "你做的每一個決定，都有一個看不見的代價。聰明投資者懂得比較不同選項的「潛在回報」。",
+                    details: [
+                        {sub:"定義", txt:"當你選擇了A，你所放棄的B、C、D選項中，價值最高的那一個。"},
+                        {sub:"投資應用", txt:"👉 現金 vs 股票：持有現金的機會成本是錯過的股市報酬\n👉 賣出決策：賣出股票的機會成本是錯過未來的上漲\n👉 時間成本：花時間研究股市 vs 花時間提升本業收入"},
+                        {sub:"無風險利率", txt:"這是投資的「最低門檻」\n👉 如果買美國10年期公債可得4%，那任何風險投資都應該要求更高的預期報酬\n👉 價值投資者會把無風險利率當作「必要報酬率」的基準"}
+                    ],
+                    case: "【實戰案例】2008年金融海嘯後，許多人因為恐懼而持有現金。但持有現金的機會成本是錯過了美股史上最長的牛市。那些懂得「在別人恐懼時貪婪」的人，獲得了超額回報。"
+                },
+                { 
+                    title: "心理帳戶 - 為什麼你會有錯誤決策", 
+                    tag: "行為財務", 
+                    intro: "同樣是1000元，為什麼你會把「意外之財」亂花，卻對「辛苦錢」小心翼翼？",
+                    details: [
+                        {sub:"定義", txt:"人們會根據錢的來源、存放位置或用途，在心中建立不同的「帳戶」，並用不同的態度對待。"},
+                        {sub:"常見陷阱", txt:"👉 獲利帳戶：股票賺的錢不算「真錢」，容易冒險\n👉 虧損帳戶：已實現虧損很痛，但未實現虧損可以假裝看不見\n👉 意外之財：獎金、紅包容易衝動消費"},
+                        {sub:"價值投資者的修正", txt:"👉 所有錢都一樣：不管是薪水、獎金還是投資獲利，都是你的資本\n👉 只看總資產：不要分股票帳戶、現金帳戶\n👉 機會成本思維：每一塊錢都有相同的投資機會"}
+                    ]
+                }
+            ]
+        }
+    ];
+
+    // 模組2：金融百科全書
+    const curriculumPart2 = [
+        {
+            id: 2, 
+            title: "📚 金融百科全書", 
+            desc: "完整學習九大類別金融名詞，從基礎到進階，建立全面金融知識體系",
+            cards: [
+                { 
+                    title: "股票市場核心名詞", 
+                    tag: "股市基礎", 
+                    intro: "理解股票市場的基本術語，是投資成功的入門關鍵。從上市上櫃到技術指標，一次搞懂。",
+                    details: [
+                        {sub:"上市/上櫃", txt:"👉 上市：公司在台灣證券交易所公開交易（如台積電、鴻海）\n👉 上櫃：公司在櫃買中心交易（規模較小，如許多科技公司）\n👉 興櫃：預備上市櫃的預備市場"},
+                        {sub:"權值股 vs 中小型股", txt:"👉 權值股：市值大、對加權指數影響大的股票（台積電佔台股約30%）\n👉 中小型股：市值較小、波動較大、成長潛力較高的股票\n👉 ETF：指數股票型基金，如0050（台灣50）"},
+                        {sub:"技術指標", txt:"👉 成交量：買賣股票數量，反映市場熱度\n👉 KD值：隨機指標，判斷超買超賣\n👉 MACD：指數平滑異同移動平均線\n👉 RSI：相對強弱指標（70以上超買，30以下超賣）"},
+                        {sub:"籌碼分析", txt:"👉 外資買賣超：外國機構投資人的買賣淨額\n👉 投信買賣超：國內投信基金的買賣淨額\n👉 融資融券：散戶信用交易指標\n👉 三大法人：外資、投信、自營商的統稱"}
+                    ],
+                    case: "【台灣實例】台積電(2330)是台灣最大權值股，外資持股比例常超過70%。當外資大買時，通常帶動台股上漲；外資大賣時，台股容易下跌。"
+                },
+                { 
+                    title: "國際投資與 ADR", 
+                    tag: "進階知識", 
+                    intro: "台積電在台灣叫 2330，在美國叫 TSM。什麼是 ADR？為什麼會有價差？如何利用？",
+                    details: [
+                        {sub:"ADR (美國存託憑證)", txt:"American Depositary Receipt。非美國公司為了在美股上市，將股票寄託在銀行，由銀行發行憑證給美國投資人交易。\n👉 TSM 就是台積電的 ADR。\n👉 換股比例：1股 TSM ADR = 5股 台積電(2330)。"},
+                        {sub:"折價與溢價 (Premium/Discount)", txt:"ADR 價格經過匯率換算後，不一定等於台股價格。\n👉 溢價：ADR比較貴。外資看好，通常會帶動台股隔天上漲。\n👉 折價：ADR比較便宜。外資看壞，可能壓抑台股表現。\n👉 公式：(ADR股價 × 匯率) ÷ 換股比例 = 對應台股價格"},
+                        {sub:"套利機制", txt:"當價差過大時，外資機構會進行「跨國套利」（買便宜的，賣貴的），使兩者價格趨於收斂。"},
+                        {sub:"複委託 vs 海外券商", txt:"👉 複委託：透過台灣券商買美股，手續費較高但方便。\n👉 海外券商：直接開戶（如Firstrade, IB），手續費低但需電匯出金。"}
+                    ],
+                    case: "【實戰應用】許多專業操盤手早上起來第一件事，就是看台積電 ADR (TSM) 的收盤漲跌幅，來預判今天台股 (2330) 的開盤氣勢。若 ADR 大漲 5%，台積電開盤通常會跳空開高。"
+                },
+                { 
+                    title: "財務分析指標", 
+                    tag: "財報分析", 
+                    intro: "透過財務指標全面評估企業體質，是價值投資者選股的基本功。",
+                    details: [
+                        {sub:"獲利能力指標", txt:"👉 營收：公司銷售總額\n👉 毛利率：（營收-成本）/營收，產品競爭力\n👉 營業利益率：扣除營業費用後的獲利率\n👉 淨利率：最終賺錢能力"},
+                        {sub:"每股指標", txt:"👉 EPS：每股盈餘 = 稅後淨利 ÷ 流通股數\n👉 每股淨值：股東權益 ÷ 流通股數\n👉 每股現金流：營運現金流 ÷ 流通股數"},
+                        {sub:"資產效率指標", txt:"👉 總資產週轉率：營收 ÷ 總資產，資產運用效率\n👉 存貨週轉率：銷貨成本 ÷ 平均存貨，存貨管理效率\n👉 應收帳款週轉率：營收 ÷ 平均應收帳款，收款效率"},
+                        {sub:"安全性指標", txt:"👉 負債比率：總負債 ÷ 總資產（<60%較安全）\n👉 流動比率：流動資產 ÷ 流動負債（一般產業 >150% 較佳，但需視產業收款模式而定，零售業通常較低）\n👉 利息保障倍數：稅前息前淨利 ÷ 利息費用"}
+                    ],
+                    case: "【台灣實例】台積電(2330)的財務指標：毛利率>50%、營業利益率>40%、負債比率<30%，顯示其財務體質非常健康。"
+                },
+                { 
+                    title: "市場交易與總經名詞", 
+                    tag: "基礎名詞", 
+                    intro: "了解市場交易的基本術語與總體經濟概念，是看懂財經新聞的第一步。",
+                    details: [
+                        {sub:"平盤 (Unchanged)", txt:"昨天的收盤價。如果今天股價收盤跟昨天一樣，就叫「收平盤」。\n👉 台灣規定：平盤以下不得放空（除非是台灣50成分股等豁免標的），這是為了避免股市跌的時候大家一起踩踏。"},
+                        {sub:"除權息 (Ex-Dividend/Rights)", txt:"公司發錢（股息）或發股票（股利）給你。\n👉 股價會扣掉：因為公司的錢分出去了，價值變少。例如股價 100 元，配息 5 元，除息後股價變 95 元。\n👉 左手換右手：你拿到的股利，其實是你自己帳戶價值扣掉換來的。"},
+                        {sub:"填息 (Fill the Dividend Gap)", txt:"除息後股價下跌（例如 100 -> 95），如果後來漲回 100 元，就叫「填息」。\n👉 意義：這時候你的股利才是真正多賺的。如果沒填息，你只是拿自己的錢配給自己。"},
+                        {sub:"名目報酬率 (Nominal Return)", txt:"帳面上看到的數字。\n👉 例子：銀行定存 1.5%，這就是名目報酬率。"},
+                        {sub:"實質報酬率 (Real Return)", txt:"扣掉通膨後，你真正變有錢的程度。\n👉 公式：名目報酬率 - 通膨率。\n👉 殘酷真相：如果定存 1.5% 但通膨 3%，你的實質報酬率是 -1.5%（變窮了）。"}
+                    ],
+                    case: "【實戰應用】投資時要關注實質報酬率而非名目報酬率。若你的投資年化報酬率為5%，但通膨率為3%，實質報酬率僅2%。"
+                },
+                { 
+                    title: "公司財務名詞詳解", 
+                    tag: "財報進階", 
+                    intro: "深入理解財報中的專業術語，讓你真正看懂公司財務狀況。",
+                    details: [
+                        {sub:"保留盈餘 (Retained Earnings)", txt:"公司歷年來賺的錢，沒發給股東，存下來的部分。\n👉 私房錢：這筆錢可以用來擴廠、研發或度過難關。巴菲特最喜歡保留盈餘高的公司，因為這代表公司有能力用這筆錢創造更多複利。"},
+                        {sub:"折舊 (Depreciation)", txt:"機器設備會變舊，價值會減少。\n👉 會計魔法：雖然公司今年沒花這筆錢，但在財報上要扣掉「折舊費用」。\n👉 現金流差異：折舊會讓利潤變少，但現金流其實沒變少（錢早就花出去了）。所以看現金流量表要把它「加回來」。"},
+                        {sub:"攤提 (Amortization)", txt:"跟折舊很像，但是針對「無形資產」（如專利權、軟體授權）。\n👉 例子：花 1000 萬買專利可以用 10 年，那每年就要「攤提」100 萬成本。"}
+                    ],
+                    case: "【實戰案例】科技公司通常有大量無形資產（專利、商譽），攤提費用會影響其淨利，但現金流不受影響，這是分析科技股時的重要調整項目。"
+                },
+                { 
+                    title: "股價走勢與交易風險", 
+                    tag: "技術分析", 
+                    intro: "掌握股價走勢的關鍵術語與交易風險，避免成為市場的犧牲者。",
+                    details: [
+                        {sub:"跳空 (Gap)", txt:"今天的開盤價跟昨天的收盤價沒有連起來，中間斷掉了。\n👉 跳空開高：大家搶着買，直接用比昨天高很多的價格成交。\n👉 意義：通常代表有重大利多或利空消息，趨勢很強。"},
+                        {sub:"多頭 / 空頭 (Bull / Bear)", txt:"👉 牛市 (Bull Market)：股價長期上漲。因為牛攻擊時角是「往上頂」的。\n👉 熊市 (Bear Market)：股價長期下跌（通常指跌幅 > 20%）。因為熊攻擊時掌是「往下拍」的。"},
+                        {sub:"支撐 / 壓力 (Support / Resistance)", txt:"👉 支撐 (地板)：股價跌到某個價位就跌不下去（有人覺得便宜在買）。\n👉 壓力 (天花板)：股價漲到某個價位就漲不上去（有人覺得貴在賣，或解套賣壓）。"},
+                        {sub:"解套 (Unwind)", txt:"之前買在高點賠錢（住套房），現在股價終於漲回來了，趕快賣掉把錢拿回來。\n👉 心理：解套賣壓通常很大，所以股價漲到前波高點時容易跌下來。"},
+                        {sub:"違約交割 (Default)", txt:"買了股票，結果 T+2 日帳戶裏沒錢扣款。\n👉 後果嚴重：這是信用破產！你會被列入黑名單，以後不能辦信用卡、貸款，甚至面臨法律責任。千萬不要當沖沖不掉就放着不管。"},
+                        {sub:"熔斷 (Circuit Breaker)", txt:"股市的保險絲。當指數跌太慘（例如美股跌 7%），交易所會強制「暫停交易」15 分鐘，讓大家冷靜一下。\n👉 目的：避免恐慌情緒無限蔓延。"},
+                        {sub:"胖手指 (Fat Finger)", txt:"按錯鍵。\n👉 例子：本來要買 1 張台積電，按成 1000 張；或是價格 500 元按成 5.00 元。\n👉 影響：可能瞬間造成股價崩盤或暴漲，是交易員的惡夢。"}
+                    ],
+                    case: "【歷史案例】2010年5月6日美股「閃電崩盤」，道瓊指數5分鐘內暴跌近1000點，部分股票瞬間跌至0.01美元，就是高頻交易和胖手指等因素綜合造成的極端事件。"
+                },
+                { 
+                    title: "籌碼分析與公司治理", 
+                    tag: "籌碼分析", 
+                    intro: "了解大戶動向與公司治理，掌握別人不知道的市場訊息。",
+                    details: [
+                        {sub:"董監持股 (Insider Ownership)", txt:"公司董事和監察人自己持有多少自家股票。\n👉 意義：如果老闆自己都不買（或一直在賣），你敢買嗎？高持股代表老闆利益跟股東綁在一起。"},
+                        {sub:"質押 (Pledge)", txt:"大股東把股票拿去抵押給銀行借錢。\n👉 風險：如果股價大跌，銀行會要求補錢，補不出來就會把股票「斷頭」賣出，導致股價跌更慘（多殺多）。"}
+                    ],
+                    case: "【台灣實例】許多地雷股在爆雷前，常出現大股東質押比率過高（超過持股50%以上），當股價下跌時引發斷頭賣壓，形成惡性循環。"
+                },
+                { 
+                    title: "公司重大行為 (Corporate Actions)", 
+                    tag: "公司治理", 
+                    intro: "公司對股票動手腳的時候，通常會直接影響股價，必須看懂背後意圖。",
+                    details: [
+                        {sub:"IPO (首次公開發行)", txt:"Initial Public Offering。公司本來是私人的，第一次把股票拿出來賣給大眾，變成「上市公司」。\n👉 抽籤（申購）：因為 IPO 價格通常比市價便宜（為了好賣），所以大家會去抽籤。抽到像中樂透，但也可能「破發」（跌破發行價）。"},
+                        {sub:"減資 (Capital Reduction)", txt:"公司覺得股本太多，把股票變少。\n👉 現金減資：公司錢太多沒處花，把錢退還給股東（好事，不用繳稅）。\n👉 彌補虧損減資：公司賠太慘，把股票變少來讓淨值好看一點（壞事，股東資產縮水）。一定要分清楚是哪一種！"},
+                        {sub:"庫藏股 (Share Repurchase)", txt:"公司覺得自家股價太委屈，用公司的錢把股票買回來。\n👉 目的：買回來註銷，讓流通股數變少。因為蛋糕（獲利）沒變，但分的人（股數）變少了，所以每個人分到的（EPS）就變多了，通常能推升股價。\n👉 注意：若公司在股價嚴重高估時回購，是在摧毀股東價值。只有在股價低估時回購才是德政。"}
+                    ],
+                    case: "【實戰案例】2018-2022年，蘋果公司執行史上最大規模股票回購，金額超過5000億美元。這使流通股數減少約40%，EPS持續成長，即使營收增長放緩，股價仍上漲超過800%。"
+                },
+                { 
+                    title: "下單類型與交易執行", 
+                    tag: "交易實務", 
+                    intro: "台股下單介面最常讓人看不懂的英文縮寫，搞懂才能下對單。",
+                    details: [
+                        {sub:"ROD / IOC / FOK (委託條件)", txt:"👉 ROD (Rest of Day)：當日有效單。掛單後沒成交，就排隊排到收盤為止（一般散戶最常用）。\n👉 IOC (Immediate or Cancel)：立即成交否則取消。我要買 10 張，市場只有 3 張，那就買 3 張，剩下 7 張取消。\n👉 FOK (Fill or Kill)：全部成交否則取消。我要買 10 張，市場只有 9 張？那就全部不要買，取消這筆單。"},
+                        {sub:"市價單 vs 限價單", txt:"👉 限價單 (Limit)：我只出這個錢。例如台積電掛 500 元買，只要沒人賣 500 元，我就不買。優點是價格確定，缺點是買不到。\n👉 市價單 (Market)：我現在就要！不管多少錢我都買。優點是保證成交，缺點是可能買到「漲停板」的天價（滑價風險）。"}
+                    ],
+                    case: "【實戰建議】一般散戶建議使用限價單，避免滑價風險。只在流動性極佳（如台積電）或急於成交時才用市價單。"
+                },
+                { 
+                    title: "市場風格與投資策略", 
+                    tag: "策略思維", 
+                    intro: "分辨你是「賭徒」還是「策略家」的關鍵詞彙，建立屬於自己的投資哲學。",
+                    details: [
+                        {sub:"左側交易 vs 右側交易", txt:"👉 左側交易 (Left-Side)：在最低點出現「之前」就進場。越跌越買，想要猜底。成本低但風險大（接刀子）。\n👉 右側交易 (Right-Side)：在最低點出現「之後」、趨勢確定向上才進場。追漲，成本較高但勝率較高（順勢而為）。"},
+                        {sub:"死貓跳 (Dead Cat Bounce)", txt:"股價大跌後出現的微弱反彈。\n👉 俗語：「從夠高的地方掉下來，就算是死貓也會反彈一下。」\n👉 警訊：這是空頭市場中的陷阱，很多散戶以為跌完了進去搶反彈，結果後面還有更深的主跌段。"},
+                        {sub:"Beta (波動係數) & Alpha (超額報酬)", txt:"👉 Beta (β)：跟大盤的連動性。β=1 代表大盤漲 1% 它也漲 1%；β=2 代表大盤漲 1% 它漲 2%（波動大、風險高）。\n👉 Alpha (α)：你的選股能力。扣掉大盤漲幅後，你靠自己多賺的部分。投資就是「追求 Alpha，承擔 Beta」。"},
+                        {sub:"雞蛋水餃股 (Penny Stocks)", txt:"股價低於 10 元（面額）的股票，便宜得像水餃。\n👉 風險：通常代表公司長期虧損或財務有問題。雖然 5 元漲到 10 元就是翻倍，但歸零下市的機率也最高。新手勿碰。"}
+                    ],
+                    case: "【投資智慧】市場風格會輪動，沒有永遠有效的策略。關鍵是找到適合自己性格與風險承受度的方式，並堅持紀律。"
+                }
+            ]
+        }
+    ];
+
+    // 模組3：財務報表篇
+    const curriculumPart3 = [
+        {
+            id: 3, 
+            title: "📊 財務報表篇", 
+            desc: "學會看懂企業的三大財務報表，這是價值投資的基本功",
+            cards: [
+                { 
+                    title: "損益表 - 企業的成績單", 
+                    tag: "獲利能力", 
+                    intro: "這家公司賺不賺錢？靠什麼賺錢？利潤是真是假？損益表會告訴你答案。",
+                    details: [
+                        {sub:"結構解析", txt:"營收 → 毛利 → 營業利益 → 稅前淨利 → 稅後淨利\n👉 營收：公司賣了多少產品\n👉 毛利：產品本身賺不賺錢\n👉 營業利益：本業賺不賺錢\n👉 稅後淨利：最終賺多少"},
+                        {sub:"關鍵指標", txt:"👉 毛利率：產品競爭力\n👉 營業利益率：經營效率\n👉 淨利率：最終獲利能力\n👉 EPS：每股賺多少錢\n👉 補充：高毛利若伴隨高行銷費用（營業費用率），護城河可能不穩，需搭配營業費用率觀察。"},
+                        {sub:"陷阱識別", txt:"👉 一次性收益：賣資產、匯兌收益會扭曲本業表現\n👉 會計魔術：折舊方法、存貨計價影響利潤\n👉 營收成長但利潤下降：可能表示成本失控或競爭加劇"}
+                    ],
+                    case: "【實戰案例】亞馬遜早期多年虧損，但營收高速成長。傳統投資者看損益表會避開，但價值投資者看現金流和市場地位。現在回頭看，當時的「虧損」是在投資未來。"
+                },
+                { 
+                    title: "現金流量表 - 企業的血液", 
+                    tag: "生死關鍵", 
+                    intro: "「黑字倒閉」就是因為現金流斷裂。這張表告訴你錢實際上是怎麼進出的，比損益表更難造假。",
+                    details: [
+                        {sub:"營運現金流 (OCF)", txt:"本業真正收進來的現金。\n👉 最重要指標：必須是正數且持續成長。\n👉 若 淨利 > OCF 持續發生，小心公司可能在虛報獲利（賺的都是應收帳款）。"},
+                        {sub:"投資現金流 (ICF)", txt:"公司買設備、蓋廠房花掉的錢。\n👉 負數代表投入資本。需區分是「為了未來成長」（好事）還是「僅為了維持現狀」（維護型資本支出，會吃掉股東利潤）。\n👉 自由現金流 (FCF) = OCF - 資本支出。這是股東真正能拿到的錢。"},
+                        {sub:"融資現金流 (FCF)", txt:"跟銀行借錢或發股利。\n👉 正數：借錢或增資（拿錢）。\n👉 負數：還錢或發股利（給錢）。"}
+                    ],
+                    case: "【避雷指南】如果你看到一家公司 EPS 很高（損益表好看），但營運現金流長期為負（收不到錢），這就是典型的地雷股特徵，隨時可能爆發財務危機。"
+                },
+                { 
+                    title: "資產負債表 - 企業的家底", 
+                    tag: "財務結構", 
+                    intro: "這家公司有多少資產？欠多少債？股東真正擁有多少？資產負債表就是企業的體檢報告。",
+                    details: [
+                        {sub:"會計恆等式", txt:"資產 = 負債 + 股東權益\n👉 資產：公司擁有的資源\n👉 負債：欠別人的錢\n👉 股東權益：真正屬於股東的部分"},
+                        {sub:"關鍵分析", txt:"👉 流動比率：短期償債能力（>1.5較安全）\n👉 負債比率：財務槓桿程度（<50%較穩健）\n👉 股東權益報酬率：ROE（>15%為佳）"},
+                        {sub:"價值投資應用", txt:"👉 淨資產價值：股價是否低於清算價值？\n👉 無形資產：品牌、專利的真實價值\n👉 商譽：併購產生的虛胖資產"}
+                    ],
+                    case: "【實戰案例】金融海嘯時，許多銀行股價遠低於淨資產價值。巴菲特投資高盛，就是看中其資產負債表雖有問題但核心業務穩固，後來獲利數倍。"
+                }
+            ]
+        }
+    ];
+
+    // 模組4：資產配置篇
+    const curriculumPart4 = [
+        {
+            id: 4, 
+            title: "🛡️ 資產配置篇", 
+            desc: "學習如何建立與調整投資組合，平衡風險與報酬，實現長期穩健成長",
+            cards: [
+                { 
+                    title: "現代投資組合理論", 
+                    tag: "分散風險", 
+                    intro: "不要把雞蛋放在同一個籃子裡，但也要知道籃子怎麼放。這就是資產配置的藝術與科學。",
+                    details: [
+                        {sub:"核心概念", txt:"透過資產分散，可以在相同風險下提高報酬，或在相同報酬下降低風險。"},
+                        {sub:"效率前緣", txt:"在風險-報酬圖上，效率前緣上的組合是最佳選擇。\n👉 下方組合：同樣風險但報酬更低\n👉 右方組合：同樣報酬但風險更高"},
+                        {sub:"實用建議", txt:"👉 股債配置：經典的60/40組合\n👉 國際分散：降低單一國家風險\n👉 再平衡：強迫買低賣高\n👉 因人而異：年齡、風險承受度不同"}
+                    ],
+                    case: "【實戰案例】2008年金融海嘯，純股票組合可能腰斬，但60/40股債組合只跌約20%。這讓投資者有資本在底部加碼，加速復原。"
+                },
+                { 
+                    title: "生命週期投資", 
+                    tag: "動態調整", 
+                    intro: "不同人生階段應該有不同的資產配置。年輕時可以冒險，年老時應該保守。",
+                    details: [
+                        {sub:"經典法則", txt:"傳統公式：股票比例 = 100 - 年齡\n👉 現代修正：110 - 年齡 或 120 - 年齡，依據距離退休年限而非單純生理年齡。\n👉 原因：現代人壽命延長，60歲退休可能還要活30年，如果債券部位太高，會面臨「長壽風險」（錢比人先死）。"},
+                        {sub:"實際操作", txt:"👉 核心+衛星：核心資產穩健，衛星資產進攻\n👉 定期再平衡：每年或每季調整\n👉 重大變化調整：結婚、生子、退休"}
+                    ]
+                },
+                { 
+                    title: "風險平價策略", 
+                    tag: "進階配置", 
+                    intro: "傳統的股債配置未必真的分散風險，風險平價讓每種資產對投資組合的風險貢獻相等。",
+                    details: [
+                        {sub:"傳統配置問題", txt:"👉 60/40股債組合中，股票的風險貢獻通常超過90%\n👉 看似分散，實則風險集中於股票\n👉 當股市下跌時，債券的保護作用有限"},
+                        {sub:"風險平價原理", txt:"👉 計算每種資產的風險貢獻\n👉 調整權重使風險貢獻相等\n👉 通常需要槓桿來提高低風險資產的報酬"},
+                        {sub:"實務應用", txt:"👉 橋水基金的全天候策略\n👉 需要定期再平衡\n👉 適合機構投資者，散戶執行難度高"}
+                    ],
+                    case: "【橋水基金】瑞·達利歐的風險平價策略在2008年金融危機中表現優異，因為他將風險均勻分散到不同資產類別，而不是簡單的股債配置。"
+                }
+            ]
+        }
+    ];
+
+    // 模組5：人生投資模擬
+    const curriculumPart5 = [
+        {
+            id: 5, 
+            title: "🎮 人生投資模擬", 
+            desc: "體驗不同人生階段的投資選擇，每個決定都將影響你的財務軌跡與人生路徑",
+            cards: [
+                { 
+                    title: "第一筆現金流：消費 vs 儲蓄", 
+                    tag: "原始積累", 
+                    intro: "22歲，你領到首月薪水，扣掉生活費剩1.5萬。朋友都買新iPhone，你會如何選擇？",
+                    details: [
+                        {sub:"情境背景", txt:"你剛大學畢業，進入職場領到第一份薪水。扣除房租、生活開銷後，剩下1.5萬元可以自由運用。同事們都在討論新款iPhone，你也想要跟上潮流。"},
+                        {sub:"選擇A：買新iPhone（消費導向）", txt:"即時影響：\n✅ 幸福感大幅提升\n✅ 社交認同感增加\n✅ 工作動力提升\n\n中期影響：\n⚠️ 自由現金流減少1.5萬\n⚠️ 下個月可能還有分期付款\n\n長期影響：\n🔻 投資本金減少，複利起點延後\n🔺 但如果iPhone幫助提升工作效率或社交資本，可能帶來隱性收益"},
+                        {sub:"選擇B：買二手或延後（儲蓄導向）", txt:"即時影響：\n⚠️ 面子分數短暫下降\n✅ 現金流保留完整\n✅ 財務安全感提升\n\n中期影響：\n✅ 有1.5萬資金可用於投資\n✅ 緊急預備金增加\n\n長期影響：\n✅ 複利起點比同齡人更早\n✅ 財務彈性大幅增加\n✅ 建立良好的儲蓄習慣"}
+                    ],
+                    case: "【投資智慧】大多數財務自由的人，在年輕時都選擇延遲享受。1.5萬如果投資在年化報酬率8%的標的，30年後會變成15萬，這就是時間的價值。"
+                },
+                { 
+                    title: "負債的誘惑：買車 vs 投資", 
+                    tag: "原始積累", 
+                    intro: "23歲，你想買車代步，車貸利率3%，預期股市報酬6%。該貸款買車還是繼續存錢？",
+                    details: [
+                        {sub:"情境背景", txt:"工作一年後，你發現通勤時間很長，想要買一輛車代步。車價60萬，可貸款48萬（利率3%），頭期款12萬。同時你也有機會投資股市，預期報酬率6%。"},
+                        {sub:"選擇A：貸款買車（負利差）", txt:"即時影響：\n✅ 通勤時間大幅減少\n✅ 生活品質提升\n✅ 社交活動增加\n\n中期影響：\n⚠️ 每月還款約1.2萬元\n⚠️ 保險、油錢、保養費每年約8萬\n⚠️ 車輛價值每年折舊15-20%\n\n長期影響：\n🔻 資金成本3% vs 投資機會6%，每年損失3%利差\n🔻 5年總成本可能超過80萬"},
+                        {sub:"選擇B：大眾運輸（延遲享樂）", txt:"即時影響：\n⚠️ 通勤時間較長\n✅ 每月可多存1.2萬元\n✅ 無負債壓力\n\n中期影響：\n✅ 每月1.2萬投資在年化6%標的\n✅ 3年後可累積約47萬投資本金\n\n長期影響：\n✅ 10年後投資組合可能超過200萬\n✅ 財務自由度大幅提高"}
+                    ],
+                    case: "【投資智慧】車子是負資產，從買進那一刻就開始貶值。年輕時應優先累積能產生現金流的資產，而非消耗現金流的負債。"
+                },
+                { 
+                    title: "能力圈的建立：跟單 vs 研究", 
+                    tag: "原始積累", 
+                    intro: "24歲，朋友熱議生技股暴漲，你不懂財報但想參與。該跟單買進還是堅守能力圈？",
+                    details: [
+                        {sub:"情境背景", txt:"同事群組瘋傳某生技股一個月漲了50%，大家都在討論要All in。你完全不懂生技產業，連財報都看不懂，但擔心錯過賺錢機會。"},
+                        {sub:"選擇A：跟單買進（FOMO恐懼錯過）", txt:"即時影響：\n✅ 可能跟上漲勢，快速獲利\n✅ 加入討論話題，社交滿足\n\n中期影響：\n⚠️ 承擔資訊劣勢風險\n⚠️ 股價波動影響情緒\n⚠️ 可能買在高點\n\n長期影響：\n🔻 如果不懂為何賺錢，下次可能虧更多\n🔻 養成跟風習慣，難以建立自己的投資體系"},
+                        {sub:"選擇B：買懂的傳產或指數（能力圈內）", txt:"即時影響：\n⚠️ 可能錯過短期暴漲\n✅ 睡眠品質良好\n✅ 決策壓力小\n\n中期影響：\n✅ 在自己的能力圈內增加知識\n✅ 投資信心逐漸建立\n\n長期影響：\n✅ 穩健累積財富\n✅ 避免恐慌性決策\n✅ 建立可複製的投資系統"}
+                    ],
+                    case: "【投資智慧】巴菲特說：「能力圈的大小不重要，清楚知道能力圈的邊界才重要。」投資自己不懂的東西，等於把命運交給別人。"
+                },
+                { 
+                    title: "緊急預備金：梭哈 vs 保留", 
+                    tag: "原始積累", 
+                    intro: "25歲，股市暴跌20%，你有6個月生活費的定存。該解定存抄底還是保留現金？",
+                    details: [
+                        {sub:"情境背景", txt:"市場因為黑天鵝事件單日暴跌20%，你的持股也大幅下跌。你剛好有12萬元定存（6個月生活費），這是多年來難得的抄底機會。"},
+                        {sub:"選擇A：解定存梭哈（全部投入）", txt:"即時影響：\n✅ 可能買到便宜股票\n✅ 感覺自己很聰明\n\n中期影響：\n⚠️ 如果突然失業，生存風險高\n⚠️ 可能被迫在低點賣出股票\n⚠️ 心理壓力巨大\n\n長期影響：\n✅ 如果沒失業且市場反彈，回報可能很好\n🔻 但『序列風險』（timing risk）不可忽視"},
+                        {sub:"選擇B：保留生活費，僅用閒錢加碼", txt:"即時影響：\n⚠️ 買入力有限\n✅ 財務安全無虞\n✅ 建議：將緊急預備金放在「高活存利率數位帳戶」或「貨幣市場基金(MMF)」，在保有流動性的同時對抗部分通膨。\n中期影響：\n✅ 能在市場低點持續參與\n✅ 不會被迫在低點賣出\n✅ 心理壓力小\n\n長期影響：\n✅ 風險控制下的長期勝率較高\n✅ 保留再投資能力"}
+                    ],
+                    case: "【投資智慧】投資的第一原則是：不要賠錢。第二原則是：記住第一原則。緊急預備金不是投資資金，而是你的生存保險。"
+                },
+                { 
+                    title: "本益比陷阱：便宜 vs 價值", 
+                    tag: "市場試煉", 
+                    intro: "29歲，航運股大賺，本益比只有2倍。該因低本益比買進，還是研究產業週期？",
+                    details: [
+                        {sub:"情境背景", txt:"航運業景氣大好，某航運股去年EPS 40元，股價80元，本益比只有2倍，看起來超級便宜。媒體都在報導航運業的豐厚獲利。"},
+                        {sub:"選擇A：強力買進（只因低PE）", txt:"即時影響：\n✅ 感覺買到超便宜股票\n✅ 可能短期繼續上漲\n\n中期影響：\n⚠️ 如果行業週期反轉，獲利難持續\n⚠️ 本益比可能從2倍變20倍（股價不變，EPS大跌）\n\n長期影響：\n🔻 可能被套在『價值陷阱』\n🔻 需要多年才能解套"},
+                        {sub:"選擇B：研究週期性供需", txt:"即時影響：\n⚠️ 需要花時間研究\n⚠️ 可能錯過短期漲幅\n\n中期影響：\n✅ 可辨認真實估值與週期底部\n✅ 針對週期股，建議改看「股價淨值比(P/B Ratio)」。在景氣谷底（賠錢、高PE）但股價跌破淨值時，往往是買點。\n\n長期影響：\n✅ 提高投資勝率\n✅ 學會辨識景氣循環股特性"}
+                    ],
+                    case: "【投資智慧】對景氣循環股來說，低本益比通常是賣出訊號，高本益比才是買進訊號。因為市場預期未來獲利會下降。"
+                },
+                { 
+                    title: "護城河的崩塌：相信 vs 檢視", 
+                    tag: "市場試煉", 
+                    intro: "31歲，持有多年的龍頭公司毛利連三季下降，公司表示是原物料上漲。該相信公司還是賣出？",
+                    details: [
+                        {sub:"情境背景", txt:"你持有5年的優質公司，過去毛利率穩定在40%以上，但最近三季連續下降至35%。公司解釋是原物料成本上漲，承諾會轉嫁給客戶。"},
+                        {sub:"選擇A：相信公司說法繼續抱", txt:"即時影響：\n✅ 減少操作頻率\n✅ 避免短期恐慌賣出\n\n中期影響：\n✅ 如果真能轉嫁成本，股價可能回升\n⚠️ 如果不能轉嫁，毛利下滑會持續\n\n長期影響：\n🔻 可能需要長時間等待恢復\n🔻 機會成本：錯過其他投資機會"},
+                        {sub:"選擇B：檢查更多訊號並考慮賣出", txt:"即時影響：\n⚠️ 需要深入研究\n⚠️ 可能賣在低點\n\n中期影響：\n✅ 如果護城河真受損，可減少損失\n✅ 資金可重新部署到更佳標的\n\n長期影響：\n✅ 保護資本是首要任務\n✅ 學會動態評估護城河"}
+                    ],
+                    case: "【投資智慧】護城河不是靜態的，需要定期檢視。當定價權開始流失，就是警訊。寧可錯賣，不要錯抱到破產。"
+                },
+                { 
+                    title: "通膨巨獸：成長股 vs 硬資產", 
+                    tag: "總經逆風", 
+                    intro: "36歲，CPI飆高、央行暴力升息。該繼續持有科技股，還是轉進抗通膨資產？",
+                    details: [
+                        {sub:"情境背景", txt:"通膨率突破8%，央行持續升息對抗通膨。你的科技股組合過去半年下跌30%，而原物料、房地產等硬資產價格持續上漲。"},
+                        {sub:"選擇A：繼續持有長天期科技股", txt:"即時影響：\n⚠️ 估值持續受壓\n⚠️ 心理壓力大\n\n中期影響：\n⚠️ 升息環境不利成長股估值\n⚠️ 可能需要忍受更長時間虧損\n\n長期影響：\n✅ 如果公司基本面強，最終會回升\n🔻 但恢復期可能很長"},
+                        {sub:"選擇B：轉進擁有定價權或硬資產", txt:"即時影響：\n✅ 可能減少短期損失\n✅ 跟上通膨趨勢\n\n中期影響：\n✅ 抗通膨資產表現較佳\n⚠️ 流動性與管理成本不同\n\n長期影響：\n✅ 資產保值效果較好\n✅ 學會因應不同總經環境"}
+                    ],
+                    case: "【投資智慧】通膨環境下，擁有定價權的公司才能存活。硬資產可以保值，但未必能創造超額報酬。最好的投資是兩者兼具。"
+                },
+                { 
+                    title: "再平衡的紀律：擇時 vs 機械", 
+                    tag: "總經逆風", 
+                    intro: "39歲，你的股債比從60:40變成40:60。該等待反彈還是機械式再平衡？",
+                    details: [
+                        {sub:"情境背景", txt:"經過一年熊市，你的投資組合中股票部位大跌，債券相對穩定。原本設定的60%股票、40%債券比例，現在變成40%股票、60%債券。"},
+                        {sub:"選擇A：不動（擇時陷阱）", txt:"即時影響：\n✅ 不需要賣債買股\n✅ 感覺比較安全\n\n中期影響：\n⚠️ 如果錯過股市反彈，報酬下降\n⚠️ 偏離原本的風險承受規劃\n\n長期影響：\n🔻 可能降低長期報酬率\n🔻 失去再平衡的買低賣高效果"},
+                        {sub:"選擇B：機械再平衡（賣債買股）", txt:"即時影響：\n⚠️ 需要克服心理障礙\n⚠️ 感覺在『接下跌的刀子』\n\n中期影響：\n✅ 強迫執行買低賣高\n✅ 回歸原本的風險設定\n\n長期影響：\n✅ 長期報酬通常較佳\n✅ 建立投資紀律"}
+                    ],
+                    case: "【投資智慧】再平衡不是為了最大化報酬，而是為了控制風險並強迫執行紀律。市場最恐慌時，往往是再平衡的最佳時機。"
+                },
+                { 
+                    title: "退休金提領：照常 vs 緩衝", 
+                    tag: "終局傳承", 
+                    intro: "56歲，剛退休就遇到熊市。該照常提領生活費，還是動用現金緩衝？",
+                    details: [
+                        {sub:"情境背景", txt:"你上個月剛退休，計劃每年從投資組合提領4%作為生活費。但市場突然進入熊市，你的退休資產一個月內下跌15%。"},
+                        {sub:"選擇A：照常提領（無視市場）", txt:"即時影響：\n✅ 生活品質不受影響\n✅ 心理壓力小\n\n中期影響：\n⚠️ 在資產低點賣出，加速消耗本金\n⚠️ 『序列風險』可能摧毀退休計劃\n⚠️ 注意：4%法則基於股債歷史回報。若未來面臨「股債雙殺」或「長期低回報」環境，4%可能會太快耗盡本金。\n\n長期影響：\n🔻 可能提前耗盡退休金\n🔻 晚年生活品質下降"},
+                        {sub:"選擇B：暫緩提領/動用現金緩衝", txt:"即時影響：\n⚠️ 可能需要降低生活開銷\n✅ 保護投資組合\n\n中期影響：\n✅ 避免在低點賣出資產\n✅ 給予投資組合恢復時間\n✅ 建議：採用「動態提領率」（例如：市場跌時少領一點，市場漲時多領一點），而非僵化的每年4%。\n長期影響：\n✅ 退休金可持續更久\n✅ 晚年財務更安全"}
+                    ],
+                    case: "【投資智慧】退休後的『序列風險』比報酬率更重要。保留2-3年的現金緩衝，可以大幅提高退休計劃的成功率。"
+                },
+                { 
+                    title: "最後的泡沫：抄底 vs 守成", 
+                    tag: "終局傳承", 
+                    intro: "63歲，那斯達克崩跌70%。該用退休金抄底，還是保守守成？",
+                    details: [
+                        {sub:"情境背景", txt:"科技股泡沫破裂，那斯達克指數從高點下跌70%。媒體都在喊『百年一遇的投資機會』，但你的退休金已經縮水30%。"},
+                        {sub:"選擇A：抄底（追求最後機會）", txt:"即時影響：\n✅ 可能買在歷史低點\n✅ 感覺抓住最後機會\n\n中期影響：\n⚠️ 恢復期可能很長（5-10年）\n⚠️ 心理壓力巨大\n\n長期影響：\n✅ 如果成功，留更多遺產\n🔻 如果失敗，晚年生活受影響\n🔻 風險承受能力隨年齡下降"},
+                        {sub:"選擇B：守成（保守配置）", txt:"即時影響：\n⚠️ 可能錯過反彈\n✅ 心理安定\n\n中期影響：\n✅ 保持生活品質\n✅ 無需擔心市場波動\n\n長期影響：\n✅ 安享晚年\n✅ 確保基本生活無虞"}
+                    ],
+                    case: "【投資智慧】不同人生階段，投資目標應該不同。年輕時可以追求成長，年老時應該追求穩定。知道自己處在什麼階段，比市場機會更重要。"
+                }
+            ]
+        }
+    ];
+
+    // 模組6：資本市場高階機制
+    const curriculumPart6 = [
+        {
+            id: 6, 
+            title: "🏴‍☠️ 資本市場高階機制", 
+            desc: "理解做空、期貨、選擇權等進階金融工具，掌握市場微結構與資本運作，從分析師升級為操盤手",
+            cards: [
+                { 
+                    title: "做空機制：跌也能賺的逆向工程", 
+                    tag: "多空策略", 
+                    intro: "大多數散戶只會「做多」，但完整的市場允許你「做空」，從別人的恐懼與下跌中獲利。",
+                    details: [
+                        {sub:"核心原理：先賣後買", txt:"1. 借券：向券商『借』股票（需支付利息）\n2. 賣出：以現在高價賣出，拿到現金\n3. 回補：等股價下跌後買回歸還\n4. 獲利：賺取價差"},
+                        {sub:"致命風險：虧損無上限", txt:"👉 做多：最多虧損100%（本金歸零）\n👉 做空：股價理論上可漲到無限，虧損無上限\n👉 實務補充：雖然理論虧損無限，但實務上券商會在保證金不足時「強制回補(Force Cover)」，所以你通常會在虧光本金及部分負債時被踢出場，不會等到無限大。\n👉 軋空：當太多人放空同一檔股票，股價上漲引發連鎖買盤，可能損失慘重"},
+                        {sub:"實戰關鍵", txt:"👉 融券維持率：做空需要保證金，維持率低於門檻會斷頭\n👉 最佳時機：不是『漲太高』時，而是『頭部形成、趨勢破線』時\n👉 台灣規則：平盤以下不得放空（除豁免標的）"}
+                    ],
+                    case: "【歷史案例】2021年GameStop軋空事件：散戶集體做多，機構做空比例高達140%。當股價開始上漲，空頭被迫回補，引發連鎖反應，股價從$20飆漲至$483，多家對沖基金損失數十億美元。"
+                },
+                { 
+                    title: "期貨：帶槓桿的時光機", 
+                    tag: "衍生商品", 
+                    intro: "期貨不是貨，它是『未來的合約』。法人避險的主戰場，也是散戶爆倉的墳場。",
+                    details: [
+                        {sub:"核心原理：保證金與槓桿", txt:"👉 台指期約400萬價值，只需20萬保證金（約20倍槓桿）\n👉 大盤漲跌5%，本金翻倍或歸零\n👉 逐日洗價：每天結算，虧損超過保證金比例會收到追繳令"},
+                        {sub:"價格結構：正逆價差", txt:"👉 正價差：期貨 > 現貨（正常狀態）\n👉 逆價差：期貨 < 現貨（異常/空頭狀態）\n👉 收斂效應：結算日當天，期貨價格必定等於現貨價格"},
+                        {sub:"交易策略", txt:"👉 避險：法人用期貨對沖現貨風險\n👉 投機：散戶用槓桿追逐趨勢\n👉 套利：利用價差異常進行無風險套利\n👉 關鍵：有到期日，不能像股票一樣『凹單』"}
+                    ],
+                    case: "【台灣實戰】2018年2月6日『0206期貨大屠殺』：台股單日暴跌542點，但期貨逆價差高達300點。許多賣出賣權的交易者，因保證金計算漏洞被券商強制砍倉在最低點，單日損失數十億。"
+                },
+                { 
+                    title: "選擇權：非線性的策略武器", 
+                    tag: "進階衍生", 
+                    intro: "股票是二維的（漲/跌），選擇權是三維的（漲跌、時間、波動率）。這是金融界最複雜也最迷人的工具。",
+                    details: [
+                        {sub:"四大基本策略", txt:"1. Buy Call：看大漲（買樂透）\n2. Buy Put：看大跌（買保險）\n3. Sell Call：看不漲（當莊家）\n4. Sell Put：看不跌（巴菲特最愛）"},
+                        {sub:"希臘字母：決定價格的參數", txt:"👉 Delta：股價變動1元，權利金變動多少（勝率）\n👉 Gamma：加速度，獲利呈指數級噴發的關鍵\n👉 Theta：時間價值，買方的敵人，賣方的朋友\n👉 Vega：波動率，市場恐慌時保費變貴"},
+                        {sub:"波動率微笑", txt:"👉 平價附近Put比Call貴：因為市場恐懼不對稱\n👉 極度價外期權隱含波動率飆升：黑天鵝保險需求\n👉 VIX指數：市場恐慌指標，選擇權交易者的風向球"}
+                    ],
+                    case: "【波動率交易】2018年2月5日，美股『波動率末日』：VIX指數從17飆漲至50，做空波動率的ETF（XIV）單日暴跌96%。許多投資者不理解Gamma風險，當市場劇烈波動時，虧損遠超預期。"
+                },
+                { 
+                    title: "市場微結構：交易是如何成交的？", 
+                    tag: "交易執行", 
+                    intro: "為什麼有時按市價買進，成交價卻比看到的貴？這就是訂單簿、流動性與滑價的微結構世界。",
+                    details: [
+                        {sub:"訂單簿深度", txt:"👉 Bid（買價）：買方願意出的最高價\n👉 Ask（賣價）：賣方願意賣的最低價\n👉 Spread（價差）：Ask - Bid，流動性越好價差越小\n👉 深度：每個價位的掛單量，反映市場厚度"},
+                        {sub:"Maker vs. Taker", txt:"👉 Maker（掛單者）：掛限價單等待成交，提供流動性\n👉 Taker（吃單者）：用市價單主動成交，消耗流動性\n👉 滑價風險：大單可能『吃掉』多個價位，成交均價劣於預期"},
+                        {sub:"高頻交易與演算法", txt:"👉 套利：利用跨市場、跨商品微小價差\n👉 做市：同時掛買賣單賺取價差\n👉 掠食性演算法：偵測大單後搶先交易\n👉 冰山單：隱藏真實委託量，避免市場衝擊"}
+                    ],
+                    case: "【閃崩事件】2010年5月6日美股閃電崩盤：道瓊指數5分鐘內暴跌1000點。高頻交易演算法間的相互作用導致流動性瞬間蒸發，許多股票出現荒謬價格（如埃森哲從$40跌至$0.01）。"
+                },
+                { 
+                    title: "資本運作：公司的財技與財富轉移", 
+                    tag: "公司治理", 
+                    intro: "公司不是靜態的，老闆可以透過股票回購、增資、分割等財技來操弄股價和股東權益。",
+                    details: [
+                        {sub:"股票回購 vs. 增資", txt:"👉 回購：公司用現金買回股票註銷\n   → EPS提高，本益比降低，推升股價\n   → 注意：若公司在股價嚴重高估時回購，是在摧毀股東價值。只有在股價低估時回購才是德政。\n👉 增資：公司印股票換現金\n   → EPS被稀釋，股價通常下跌（對原股東不利）"},
+                        {sub:"股票分割 vs. 反分割", txt:"👉 分割：1股拆10股（如NVIDIA）\n   → 股價變便宜，吸引散戶，流動性增加\n👉 反分割：10股併1股\n   → 通常因股價太低面臨下市風險，是警訊"},
+                        {sub:"股利政策與財富轉移", txt:"👉 現金股利：股東拿到現金，但除權息後股價下降\n👉 股票股利：股東拿到更多股票，股本膨脹\n👉 盈餘轉增資：保留盈餘轉為資本，常見於成長期公司"}
+                    ],
+                    case: "【回購的力量】2013-2022年，蘋果公司執行史上最大規模股票回購，金額超過5000億美元。這使流通股數減少約40%，EPS持續成長，即使營收增長放緩，股價仍上漲超過800%。"
+                },
+                { 
+                    title: "結構型商品：包裝的風險與報酬", 
+                    tag: "複雜產品", 
+                    intro: "銀行將衍生性商品包裝成看似保本的商品，實際風險與費用隱藏在複雜的條款中。",
+                    details: [
+                        {sub:"常見結構", txt:"👉 保本型：部分資金買零息債券，部分買選擇權\n👉 股權連結：報酬連結單一股票或一籃子股票\n👉 區間計息：只有股價在特定區間內才有利息\n👉 雪球型：只要不觸及下檔保護，定期支付高息"},
+                        {sub:"隱藏風險", txt:"👉 信用風險：發行銀行倒閉可能血本無歸\n👉 流動性風險：通常無法中途解約或次級市場流動性差（趨近於零，一旦買入通常必須持有至到期，資金運用極度受限）\n👉 複雜性風險：投資人難以理解真實風險報酬\n👉 費用高昂：隱含管理費、通路費可能達3-5%"},
+                        {sub:"適合對象", txt:"👉 了解產品結構與風險的專業投資人\n👉 有特定市場觀點（如區間盤整）\n👉 需要資產配置中非相關性資產\n👉 注意：不適合追求流動性或風險承受度低者"}
+                    ],
+                    case: "【雷曼連動債事件】2008年金融海嘯期間，台灣多家銀行銷售的雷曼兄弟連動債隨雷曼破產而違約。許多投資人誤以為『保本』，實際上是高風險信用商品，數萬投資人損失慘重。"
+                },
+                { 
+                    title: "跨境套利與稅務套利", 
+                    tag: "國際金融", 
+                    intro: "資本無國界，聰明錢總是在尋找監管套利、稅率差異與匯率不對稱的機會。",
+                    details: [
+                        {sub:"監管套利", txt:"👉 在不同司法管轄區選擇監管最寬鬆者\n👉 舉例：避險基金在開曼群島註冊，享受稅務優惠\n👉 加密貨幣：利用各國對加密貨幣監管差異進行套利"},
+                        {sub:"稅務套利", txt:"👉 利用不同國家稅率差異\n👉 移轉定價：跨國企業在低稅率國家申報較高利潤\n👉 雙重不課稅：某些結構可避免在來源國和居住國課稅"},
+                        {sub:"匯率套利", txt:"👉 三角套匯：利用三種貨幣間匯率不一致\n👉 利差交易：借低利率貨幣（如日圓），投資高利率貨幣\n👉 匯率避險成本：影響國際投資的實際報酬"}
+                    ],
+                    case: "【愛爾蘭三明治】許多美國科技公司利用『愛爾蘭-荷蘭-愛爾蘭』三明治結構，將利潤移轉至百慕達等避稅天堂，有效稅率可降至個位數。歐盟近年加強反避稅措施，此類結構面臨挑戰。"
+                }
+            ]
+        }
+    ];
+
+    // 合併所有課程模組（按照邏輯學習路徑排序）
+    const curriculum = [
+        ...curriculumPart0,   // 模組0：投資入門篇
+        ...curriculumPart1,   // 模組1：財富心智篇
+        ...curriculumPart2,   // 模組2：金融百科全書
+        ...curriculumPart3,   // 模組3：財務報表篇
+        ...curriculumPart4,   // 模組4：資產配置篇
+        ...curriculumPart5,   // 模組5：人生投資模擬
+        ...curriculumPart6    // 模組6：資本市場高階機制
+    ];
+
+    // ============================================================
+    // 🚀 核心功能實現
+    // ============================================================
+
+    let currentModuleId = 0; // 當前選中的模組ID
+    let currentChoiceData = null; // 儲存當前選擇的資料
+    let currentCardData = null; // 儲存當前卡片的資料
+
+    function init() {
+        // 渲染模組列表
+        renderModuleList();
+        
+        // 載入第一個模組
+        loadModule(0);
+        
+        // 綁定事件監聽器
+        bindGlobalEvents();
+        
+        console.log("🚀 財富特訓班已啟動！共" + curriculum.length + "個模組，" + curriculum.reduce((sum, m) => sum + m.cards.length, 0) + "張學習卡片");
+    }
+
+    function renderModuleList() {
+        const moduleList = document.getElementById('moduleList');
+        const moduleListMobile = document.getElementById('moduleListMobile');
+        
+        if (!moduleList || !moduleListMobile) return;
+        
+        // 清空列表
+        moduleList.innerHTML = '';
+        moduleListMobile.innerHTML = '';
+        
+        curriculum.forEach(module => {
+            // 桌機版
+            const li = createModuleItem(module);
+            moduleList.appendChild(li);
+            
+            // 手機版
+            const liMobile = createModuleItem(module);
+            moduleListMobile.appendChild(liMobile);
+        });
+        
+        // 預設選中第一個
+        const firstItem = moduleList.querySelector('.module-item');
+        const firstItemMobile = moduleListMobile.querySelector('.module-item');
+        if (firstItem) firstItem.classList.add('active');
+        if (firstItemMobile) firstItemMobile.classList.add('active');
+    }
+
+    function createModuleItem(module) {
+        const li = document.createElement('li');
+        li.className = 'module-item';
+        li.dataset.id = module.id;
+        
+        // 簡化標題顯示（只顯示主標題）
+        const titleParts = module.title.split(' ');
+        const mainTitle = titleParts.slice(1).join(' ') || module.title;
+        
+        li.innerHTML = `
+            <span style="flex:1;">${mainTitle}</span>
+            <span style="font-size:0.8rem; background:#f1f5f9; padding:2px 8px; border-radius:10px; color:#64748b;">
+                ${module.cards.length}張
+            </span>
+        `;
+        
+        li.addEventListener('click', () => {
+            // 移除所有active類
+            document.querySelectorAll('.module-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // 添加active類到當前選中
+            li.classList.add('active');
+            
+            // 載入模組內容
+            loadModule(module.id);
+            
+            // 如果是手機版，關閉選單
+            if (window.innerWidth <= 768) {
+                closeMobileMenu();
+            }
+        });
+        
+        return li;
+    }
+
+    function loadModule(moduleId) {
+        currentModuleId = moduleId;
+        const module = curriculum.find(m => m.id === moduleId);
+        if (!module) return;
+        
+        const contentArea = document.getElementById('contentArea');
+        if (!contentArea) return;
+        
+        // 動畫過渡效果
+        contentArea.style.opacity = '0';
+        contentArea.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            // 檢查是否需要滑桿模式（卡片數量 > 4 且螢幕寬度 >= 1200）
+            const useSlider = module.cards.length > 4 && window.innerWidth >= 1200;
+            
+            // 渲染模組標題和描述
+            contentArea.innerHTML = `
+                <div class="header-section">
+                    <h2>${module.title}</h2>
+                    <p>${module.desc}</p>
+                    <div style="margin-top:15px; font-size:0.9rem; color:#64748b;">
+                        本模組包含 ${module.cards.length} 個學習單元
+                        ${useSlider ? '（使用左右滑桿瀏覽）' : ''}
+                    </div>
+                </div>
+                
+                <!-- 滑桿控制區域 -->
+                <div class="module-slider-container ${useSlider ? 'visible' : ''}" id="sliderContainer">
+                    <div class="slider-header">
+                        <div class="slider-info">左右滑動瀏覽學習卡片</div>
+                        <div class="slider-controls">
+                            <button class="slider-button" id="sliderPrev">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <polyline points="15 18 9 12 15 6"></polyline>
+                                </svg>
+                            </button>
+                            <button class="slider-button" id="sliderNext">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-slider" id="cardSlider"></div>
+                </div>
+                
+                <!-- 傳統卡片網格 -->
+                <div class="card-grid ${useSlider ? 'has-many-cards' : ''}" id="cardGrid"></div>
+                
+                <!-- AI分析面板 -->
+                <div class="ai-analysis-panel" id="aiAnalysisPanel">
+                    <div class="analysis-title">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        <span>🤖 AI 對你的選擇分析</span>
+                    </div>
+                    <div id="aiAnalysisContent"></div>
+                </div>
+                
+                <div class="ai-tool-panel">
+                    <div class="tool-title">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        <span>🤖 AI 投資顧問 (Gemini 3 Flash)</span>
+                    </div>
+                    <div style="margin-bottom:15px; font-size:0.9rem; color:#475569;">
+                        輸入您的問題，AI 會根據當前學習的模組內容提供專業建議
+                    </div>
+                    <input type="password" id="apiKeyInput" class="ai-input" placeholder="在此貼上 Google AI API Key (不會被儲存)">
+                    <textarea id="userPrompt" class="ai-textarea" placeholder="輸入您的投資問題，例如：根據剛才學的內容，我該如何應用本益比來選股？或是詢問其他投資相關問題..."></textarea>
+                    <button class="ai-button" onclick="askGemini()">🚀 發送問題給 AI 顧問</button>
+                    <div id="aiResponse" class="ai-response"></div>
+                </div>
+            `;
+            
+            // 渲染卡片（根據模式）
+            if (useSlider) {
+                renderCardsAsSlider(module);
+            } else {
+                renderCardsAsGrid(module);
+            }
+            
+            // 重新綁定 AI 相關事件
+            bindAIEvents();
+            
+            // 綁定滑桿事件
+            if (useSlider) {
+                bindSliderEvents();
+            }
+            
+            // 恢復動畫
+            setTimeout(() => {
+                contentArea.style.opacity = '1';
+                contentArea.style.transform = 'translateY(0)';
+                contentArea.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            }, 50);
+        }, 300);
+    }
+
+    function renderCardsAsSlider(module) {
+        const cardSlider = document.getElementById('cardSlider');
+        if (!cardSlider) return;
+        
+        cardSlider.innerHTML = '';
+        
+        module.cards.forEach((card, index) => {
+            const cardDiv = createCardElement(module.id, card, index);
+            cardSlider.appendChild(cardDiv);
+        });
+    }
+
+    function renderCardsAsGrid(module) {
+        const cardGrid = document.getElementById('cardGrid');
+        if (!cardGrid) return;
+        
+        cardGrid.innerHTML = '';
+        
+        module.cards.forEach((card, index) => {
+            const cardDiv = createCardElement(module.id, card, index);
+            cardGrid.appendChild(cardDiv);
+        });
+    }
+
+    function createCardElement(moduleId, card, index) {
+        const cardDiv = document.createElement('div');
+        
+        // 如果是人生模擬模組，使用特殊卡片樣式
+        if (moduleId === 5) {
+            cardDiv.className = 'flashcard life-card';
+            cardDiv.innerHTML = `
+                <div class="age-badge">${getAgeFromTag(card.tag)}</div>
+                <div class="tag life-tag">${card.tag}</div>
+                <h3 style="font-size:1.2rem; margin-bottom:10px; color:#7c2d12;">${card.title}</h3>
+                <p style="color:#7c2d12; line-height:1.6; margin-bottom:15px; flex:1; opacity:0.9;">${card.intro}</p>
+                <div class="click-hint" style="color:#d97706;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                    點擊體驗人生選擇
+                </div>
+            `;
+        } else {
+            cardDiv.className = 'flashcard';
+            cardDiv.innerHTML = `
+                <div class="tag">${card.tag}</div>
+                <h3 style="font-size:1.2rem; margin-bottom:10px; color:var(--secondary);">${card.title}</h3>
+                <p style="color:#475569; line-height:1.6; margin-bottom:15px; flex:1;">${card.intro}</p>
+                <div class="click-hint">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                    點擊查看完整解析
+                </div>
+            `;
+        }
+        
+        cardDiv.dataset.moduleId = moduleId;
+        cardDiv.dataset.cardIndex = index;
+        
+        cardDiv.addEventListener('click', () => {
+            if (moduleId === 5) {
+                currentCardData = {moduleId, cardIndex: index, card};
+                showLifeChoiceDetail(moduleId, index);
+            } else {
+                showCardDetail(moduleId, index);
+            }
+        });
+        
+        return cardDiv;
+    }
+
+    function bindSliderEvents() {
+        const slider = document.getElementById('cardSlider');
+        const prevBtn = document.getElementById('sliderPrev');
+        const nextBtn = document.getElementById('sliderNext');
+        
+        if (!slider || !prevBtn || !nextBtn) return;
+        
+        // 更新按鈕狀態
+        function updateButtons() {
+            prevBtn.disabled = slider.scrollLeft <= 10;
+            nextBtn.disabled = slider.scrollLeft >= slider.scrollWidth - slider.clientWidth - 10;
+        }
+        
+        // 初始狀態
+        updateButtons();
+        
+        // 上一張
+        prevBtn.addEventListener('click', () => {
+            const cardWidth = slider.querySelector('.flashcard')?.offsetWidth || 300;
+            const gap = 20;
+            slider.scrollBy({ left: -(cardWidth + gap), behavior: 'smooth' });
+            
+            setTimeout(updateButtons, 300);
+        });
+        
+        // 下一張
+        nextBtn.addEventListener('click', () => {
+            const cardWidth = slider.querySelector('.flashcard')?.offsetWidth || 300;
+            const gap = 20;
+            slider.scrollBy({ left: cardWidth + gap, behavior: 'smooth' });
+            
+            setTimeout(updateButtons, 300);
+        });
+        
+        // 滾動時更新按鈕狀態
+        slider.addEventListener('scroll', updateButtons);
+        
+        // 視窗大小改變時重新計算
+        window.addEventListener('resize', () => {
+            setTimeout(updateButtons, 100);
+        });
+    }
+
+    // 從標籤獲取年齡（用於人生模擬模組）
+    function getAgeFromTag(tag) {
+        const ageMap = {
+            "原始積累": "22-28",
+            "市場試煉": "29-35", 
+            "總經逆風": "36-45",
+            "衍生博弈": "41-55",
+            "終局傳承": "56-65"
+        };
+        return ageMap[tag] || "?";
+    }
+
+    function bindAIEvents() {
+        const userPromptInput = document.getElementById('userPrompt');
+        if (userPromptInput) {
+            userPromptInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    askGemini();
+                }
+            });
+        }
+    }
+
+    function bindGlobalEvents() {
+        // 綁定 ESC 鍵關閉彈窗
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+                closeImpactDetail();
+                closeMobileMenu();
+            }
+        });
+        
+        // 視窗大小改變時調整佈局
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                document.querySelector('.sidebar').style.transform = 'translateX(0)';
+                document.querySelector('.sidebar-mobile-overlay').classList.remove('active');
+                document.querySelector('.sidebar-mobile').classList.remove('active');
+            }
+            
+            // 重新判斷是否需要滑桿模式
+            const currentModule = curriculum.find(m => m.id === currentModuleId);
+            if (currentModule) {
+                const useSlider = currentModule.cards.length > 4 && window.innerWidth >= 1200;
+                const sliderContainer = document.getElementById('sliderContainer');
+                const cardGrid = document.getElementById('cardGrid');
+                
+                if (sliderContainer && cardGrid) {
+                    if (useSlider) {
+                        sliderContainer.classList.add('visible');
+                        cardGrid.classList.add('has-many-cards');
+                        renderCardsAsSlider(currentModule);
+                        bindSliderEvents();
+                    } else {
+                        sliderContainer.classList.remove('visible');
+                        cardGrid.classList.remove('has-many-cards');
+                        renderCardsAsGrid(currentModule);
+                    }
+                }
+            }
+        });
+    }
+
+    function showCardDetail(moduleId, cardIndex) {
+        const module = curriculum.find(m => m.id === moduleId);
+        if (!module || !module.cards[cardIndex]) return;
+        
+        const card = module.cards[cardIndex];
+        const modal = document.getElementById('detailModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        
+        if (!modal || !modalTitle || !modalBody) return;
+        
+        // 設置標題
+        modalTitle.textContent = card.title;
+        
+        // 構建詳情內容
+        let detailsHTML = `
+            <div style="margin-bottom:25px; padding:20px; background:#f8fafc; border-radius:12px; border-left:4px solid var(--accent);">
+                <div style="font-size:0.9rem; color:#64748b; margin-bottom:5px;">核心觀念</div>
+                <div style="font-size:1.1rem; line-height:1.6; color:#334155;">${card.intro}</div>
+            </div>
+        `;
+        
+        // 添加詳細解析
+        card.details.forEach((detail, index) => {
+            detailsHTML += `
+                <div class="detail-block" style="animation-delay: ${index * 0.1}s">
+                    <div class="detail-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        ${detail.sub}
+                    </div>
+                    <div style="color:#475569; line-height:1.7; white-space:pre-line; margin-left:26px;">
+                        ${detail.txt}
+                    </div>
+                </div>
+            `;
+        });
+        
+        // 添加實戰案例（如果有）
+        if (card.case) {
+            detailsHTML += `
+                <div class="detail-block" style="margin-top:30px;">
+                    <div class="detail-title" style="color:#dc2626; background:#fef2f2; border-left-color:#dc2626;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        🔥 實戰案例解析
+                    </div>
+                    <div style="background:#fef2f2; padding:20px; border-radius:10px; border-left:4px solid #dc2626; color:#7f1d1d; line-height:1.7;">
+                        ${card.case}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 添加行動提示
+        detailsHTML += `
+            <div style="margin-top:30px; padding:20px; background:#f0fdfa; border-radius:12px; text-align:center;">
+                <div style="font-size:0.9rem; color:var(--primary); margin-bottom:10px; font-weight:bold;">
+                    💡 立刻應用這個觀念
+                </div>
+                <div style="color:#475569; font-size:0.95rem; margin-bottom:15px;">
+                    將這個觀念應用到你的投資決策中，並使用上方的 AI 顧問進一步討論
+                </div>
+                <button onclick="closeModal()" style="background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">
+                    關閉並繼續學習
+                </button>
+            </div>
+        `;
+        
+        modalBody.innerHTML = detailsHTML;
+        
+        // 顯示彈窗
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        // 添加進場動畫
+        setTimeout(() => {
+            modal.style.opacity = '1';
+        }, 10);
+    }
+
+    // 顯示人生選擇詳情（特殊處理）
+    function showLifeChoiceDetail(moduleId, cardIndex) {
+        const module = curriculum.find(m => m.id === moduleId);
+        if (!module || !module.cards[cardIndex]) return;
+        
+        const card = module.cards[cardIndex];
+        const modal = document.getElementById('detailModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        
+        if (!modal || !modalTitle || !modalBody) return;
+        
+        // 設置標題
+        modalTitle.textContent = card.title;
+        
+        // 構建互動式人生選擇內容
+        let detailsHTML = `
+            <div style="margin-bottom:25px; padding:20px; background:linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius:12px; border-left:4px solid #f59e0b;">
+                <div style="display:flex; align-items:center; gap:15px; margin-bottom:10px;">
+                    <div style="background:#d97706; color:white; padding:6px 12px; border-radius:20px; font-size:0.8rem; font-weight:bold;">
+                        ${card.tag}
+                    </div>
+                    <div style="background:var(--primary); color:white; padding:6px 12px; border-radius:20px; font-size:0.8rem; font-weight:bold;">
+                        年齡：${getAgeFromTag(card.tag)}
+                    </div>
+                </div>
+                <div style="font-size:1.1rem; line-height:1.6; color:#7c2d12; font-weight:600;">${card.intro}</div>
+            </div>
+            
+            <div style="margin-bottom:20px; padding:15px; background:#f8fafc; border-radius:10px;">
+                <div style="font-size:0.9rem; color:#64748b; margin-bottom:5px;">情境背景</div>
+                <div style="color:#475569; line-height:1.6;">${card.details[0]?.txt || '無情境描述'}</div>
+            </div>
+            
+            <div style="margin:25px 0; text-align:center;">
+                <div style="font-size:1rem; color:var(--primary); font-weight:bold; margin-bottom:15px;">你會如何選擇？</div>
+                <div style="font-size:0.9rem; color:#64748b;">點擊下方選項查看不同選擇的結果</div>
+            </div>
+        `;
+        
+        // 添加選擇A
+        detailsHTML += `
+            <div class="choice-card" onclick="selectChoice(this, 'A')" data-choice="A" data-choice-details='${JSON.stringify(card.details[1]?.txt || '').replace(/'/g, "\\'")}'>
+                <div class="choice-title">
+                    <div style="width:24px; height:24px; background:#0f766e; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">A</div>
+                    ${card.details[1]?.sub || '選擇A'}
+                </div>
+                <div style="color:#475569; line-height:1.6; margin-bottom:15px;">
+                    ${extractFirstLine(card.details[1]?.txt || '')}
+                </div>
+                <div class="choice-outcome" style="display:none;">
+                    ${getOutcomeAnalysis(card.details[1]?.txt || '', 'A')}
+                </div>
+            </div>
+        `;
+        
+        // 添加選擇B
+        detailsHTML += `
+            <div class="choice-card" onclick="selectChoice(this, 'B')" data-choice="B" data-choice-details='${JSON.stringify(card.details[2]?.txt || '').replace(/'/g, "\\'")}'>
+                <div class="choice-title">
+                    <div style="width:24px; height:24px; background:#f59e0b; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">B</div>
+                    ${card.details[2]?.sub || '選擇B'}
+                </div>
+                <div style="color:#475569; line-height:1.6; margin-bottom:15px;">
+                    ${extractFirstLine(card.details[2]?.txt || '')}
+                </div>
+                <div class="choice-outcome" style="display:none;">
+                    ${getOutcomeAnalysis(card.details[2]?.txt || '', 'B')}
+                </div>
+            </div>
+        `;
+        
+        // 添加投資智慧
+        if (card.case) {
+            detailsHTML += `
+                <div style="margin-top:30px; padding:20px; background:#f0fdfa; border-radius:12px;">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0f766e">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        <div style="font-size:1rem; color:var(--primary); font-weight:bold;">投資智慧</div>
+                    </div>
+                    <div style="color:#475569; line-height:1.7;">
+                        ${card.case.replace('【投資智慧】', '')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 添加行動提示
+        detailsHTML += `
+            <div style="margin-top:30px; padding:20px; background:#f8fafc; border-radius:12px; text-align:center;">
+                <div style="font-size:0.9rem; color:var(--primary); margin-bottom:10px; font-weight:bold;">
+                    💭 反思你的選擇
+                </div>
+                <div style="color:#475569; font-size:0.95rem; margin-bottom:15px;">
+                    根據你的價值觀與財務目標，哪個選擇更適合你？與AI顧問討論你的想法
+                </div>
+                <button onclick="closeModal()" style="background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold; margin-right:10px;">
+                    關閉
+                </button>
+                <button onclick="shareChoice()" style="background:#f59e0b; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">
+                    取得 AI 對我的選擇分析
+                </button>
+            </div>
+        `;
+        
+        modalBody.innerHTML = detailsHTML;
+        
+        // 顯示彈窗
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        // 添加進場動畫
+        setTimeout(() => {
+            modal.style.opacity = '1';
+        }, 10);
+    }
+
+    // 輔助函數：提取文本第一行
+    function extractFirstLine(text) {
+        const lines = text.split('\n');
+        for (let line of lines) {
+            if (line.trim().length > 5 && !line.includes('即時影響：') && !line.includes('中期影響：') && !line.includes('長期影響：')) {
+                return line.trim();
+            }
+        }
+        return text.substring(0, 100) + '...';
+    }
+
+    // 輔助函數：獲取完整的結果分析
+    function getOutcomeAnalysis(text, choice) {
+        // 解析文本，分離出短中長期的影響
+        const lines = text.split('\n');
+        let currentPeriod = '';
+        let shortTerm = '';
+        let midTerm = '';
+        let longTerm = '';
+        
+        for (let line of lines) {
+            if (line.includes('即時影響：')) {
+                currentPeriod = 'short';
+                shortTerm = line.replace('即時影響：', '').trim();
+            } else if (line.includes('中期影響：')) {
+                currentPeriod = 'mid';
+                midTerm = line.replace('中期影響：', '').trim();
+            } else if (line.includes('長期影響：')) {
+                currentPeriod = 'long';
+                longTerm = line.replace('長期影響：', '').trim();
+            } else if (currentPeriod === 'short' && line.trim() && !line.includes('中期影響：') && !line.includes('長期影響：')) {
+                shortTerm += ' ' + line.trim();
+            } else if (currentPeriod === 'mid' && line.trim() && !line.includes('即時影響：') && !line.includes('長期影響：')) {
+                midTerm += ' ' + line.trim();
+            } else if (currentPeriod === 'long' && line.trim() && !line.includes('即時影響：') && !line.includes('中期影響：')) {
+                longTerm += ' ' + line.trim();
+            }
+        }
+        
+        // 清理文本，移除多餘空格
+        shortTerm = shortTerm.replace(/\s+/g, ' ').trim();
+        midTerm = midTerm.replace(/\s+/g, ' ').trim();
+        longTerm = longTerm.replace(/\s+/g, ' ').trim();
+        
+        // 生成HTML - 現在每個影響框都是可點擊的
+        return `
+            <div class="outcome-box" onclick="showImpactDetail('${choice}', '即時影響', \`${shortTerm.replace(/`/g, '\\`')}\`)">
+                <div class="outcome-label">即時影響</div>
+                <div class="outcome-value">${getImpactDescription(shortTerm)}</div>
+            </div>
+            <div class="outcome-box" onclick="showImpactDetail('${choice}', '中期影響', \`${midTerm.replace(/`/g, '\\`')}\`)">
+                <div class="outcome-label">中期影響</div>
+                <div class="outcome-value">${getImpactDescription(midTerm)}</div>
+            </div>
+            <div class="outcome-box" onclick="showImpactDetail('${choice}', '長期影響', \`${longTerm.replace(/`/g, '\\`')}\`)">
+                <div class="outcome-label">長期影響</div>
+                <div class="outcome-value">${getImpactDescription(longTerm)}</div>
+            </div>
+        `;
+    }
+
+    // 輔助函數：根據文本內容獲取影響描述
+    function getImpactDescription(text) {
+        if (!text) return '<span class="neutral">無明顯影響</span>';
+        
+        // 判斷影響性質
+        const lowerText = text.toLowerCase();
+        let impactClass = 'neutral';
+        let impactDesc = '';
+        
+        // 檢查正面影響
+        if (lowerText.includes('✅') || lowerText.includes('提升') || lowerText.includes('增加') || 
+            lowerText.includes('良好') || lowerText.includes('正面') || lowerText.includes('收益') ||
+            lowerText.includes('機會') || lowerText.includes('改善') || lowerText.includes('增強')) {
+            impactClass = 'positive';
+            
+            if (lowerText.includes('大幅') || lowerText.includes('顯著') || lowerText.includes('強烈')) {
+                impactDesc = '高度正面';
+            } else {
+                impactDesc = '正面';
+            }
+        }
+        // 檢查負面影響
+        else if (lowerText.includes('⚠️') || lowerText.includes('🔻') || lowerText.includes('下降') || 
+                 lowerText.includes('減少') || lowerText.includes('壓力') || lowerText.includes('損失') ||
+                 lowerText.includes('風險') || lowerText.includes('不利') || lowerText.includes('負面')) {
+            impactClass = 'negative';
+            
+            if (lowerText.includes('大幅') || lowerText.includes('嚴重') || lowerText.includes('高度')) {
+                impactDesc = '高度負面';
+            } else {
+                impactDesc = '負面';
+            }
+        }
+        // 混合或中性影響
+        else {
+            impactClass = 'neutral';
+            impactDesc = '中性';
+        }
+        
+        return `<span class="${impactClass} impact-label">${impactDesc}</span>`;
+    }
+
+    // 顯示詳細影響分析
+    function showImpactDetail(choice, period, details) {
+        const modal = document.getElementById('impactDetailModal');
+        const modalTitle = document.getElementById('impactModalTitle');
+        const modalBody = document.getElementById('impactModalBody');
+        
+        if (!modal || !modalTitle || !modalBody) return;
+        
+        // 設置標題
+        modalTitle.textContent = `選擇 ${choice} - ${period} 詳細分析`;
+        
+        // 清理和格式化詳細內容
+        let cleanDetails = details;
+        // 移除開頭的✅⚠️🔻🔺等符號
+        cleanDetails = cleanDetails.replace(/^[✅⚠️🔻🔺]\s*/, '');
+        
+        // 生成詳細內容
+        modalBody.innerHTML = `
+            <div class="impact-period">
+                <div class="impact-period-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                    ${period}
+                </div>
+                <div class="impact-period-desc">
+                    ${cleanDetails || '無詳細描述'}
+                </div>
+            </div>
+            
+            <div style="margin-top:20px; padding:15px; background:#f8fafc; border-radius:10px;">
+                <div style="font-size:0.9rem; color:#64748b; margin-bottom:8px;">影響評估</div>
+                <div>${getImpactDescription(details)}</div>
+            </div>
+            
+            <div style="margin-top:20px; text-align:center;">
+                <button onclick="closeImpactDetail()" style="background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">
+                    關閉
+                </button>
+            </div>
+        `;
+        
+        // 顯示彈窗
+        modal.style.display = 'flex';
+    }
+
+    // 關閉詳細影響分析彈窗
+    function closeImpactDetail(event) {
+        const modal = document.getElementById('impactDetailModal');
+        if (!modal) return;
+        
+        // 如果點擊了關閉按鈕
+        if (event && event.target.classList.contains('close-btn')) {
+            modal.style.display = 'none';
+            return;
+        }
+        
+        // 如果點擊了遮罩層
+        if (event && event.target === modal) {
+            modal.style.display = 'none';
+            return;
+        }
+        
+        // 直接調用函數
+        if (!event) {
+            modal.style.display = 'none';
+        }
+    }
+
+    // 選擇處理函數
+    function selectChoice(element, choice) {
+        // 移除所有選擇卡片的selected類
+        document.querySelectorAll('.choice-card').forEach(card => {
+            card.classList.remove('selected');
+            const outcome = card.querySelector('.choice-outcome');
+            if (outcome) outcome.style.display = 'none';
+        });
+        
+        // 添加selected類到當前選擇
+        element.classList.add('selected');
+        const outcome = element.querySelector('.choice-outcome');
+        if (outcome) outcome.style.display = 'grid';
+        
+        // 儲存當前選擇的資料
+        const choiceDetails = element.dataset.choiceDetails;
+        const choiceText = element.querySelector('.choice-title').textContent.replace('A', '').replace('B', '').trim();
+        
+        currentChoiceData = {
+            choice: choice,
+            choiceText: choiceText,
+            choiceDetails: choiceDetails,
+            cardData: currentCardData
+        };
+        
+        // 添加動畫效果
+        element.style.animation = 'choiceSelect 0.3s ease';
+        setTimeout(() => {
+            element.style.animation = '';
+        }, 300);
+        
+        // 滾動到選擇卡片位置
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // 分享選擇 - 現在改為取得AI分析
+    async function shareChoice() {
+        if (!currentChoiceData) {
+            alert('請先選擇一個選項！');
+            return;
+        }
+        
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const API_KEY = apiKeyInput?.value.trim() || "";
+        
+        if (!API_KEY) { 
+            alert("請先在下方輸入 Google AI Studio 的 API Key"); 
+            return; 
+        }
+        
+        // 獲取相關資料
+        const card = currentChoiceData.cardData.card;
+        const choice = currentChoiceData.choice;
+        const choiceText = currentChoiceData.choiceText;
+        const choiceDetails = currentChoiceData.choiceDetails;
+        
+        // 解析影響內容
+        const lines = choiceDetails.split('\n');
+        let shortTerm = '', midTerm = '', longTerm = '';
+        let currentPeriod = '';
+        
+        for (let line of lines) {
+            if (line.includes('即時影響：')) {
+                currentPeriod = 'short';
+                shortTerm = line.replace('即時影響：', '').trim();
+            } else if (line.includes('中期影響：')) {
+                currentPeriod = 'mid';
+                midTerm = line.replace('中期影響：', '').trim();
+            } else if (line.includes('長期影響：')) {
+                currentPeriod = 'long';
+                longTerm = line.replace('長期影響：', '').trim();
+            } else if (currentPeriod === 'short' && line.trim()) {
+                shortTerm += ' ' + line.trim();
+            } else if (currentPeriod === 'mid' && line.trim()) {
+                midTerm += ' ' + line.trim();
+            } else if (currentPeriod === 'long' && line.trim()) {
+                longTerm += ' ' + line.trim();
+            }
+        }
+        
+        // 顯示AI分析面板
+        const aiAnalysisPanel = document.getElementById('aiAnalysisPanel');
+        const aiAnalysisContent = document.getElementById('aiAnalysisContent');
+        
+        aiAnalysisPanel.classList.add('active');
+        aiAnalysisContent.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px; color:#64748b; margin-bottom:15px;">
+                <div style="width:20px; height:20px; border:2px solid #f3f4f6; border-top:2px solid #0f766e; border-radius:50%; animation:spin 1s linear infinite;"></div>
+                AI 正在分析你的選擇，請稍候...
+            </div>
+        `;
+        
+        // 滾動到AI分析面板
+        aiAnalysisPanel.scrollIntoView({ behavior: 'smooth' });
+        
+        try {
+            const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=" + API_KEY;
+            
+            const payload = {
+                contents: [{
+                    parts: [{ 
+                        text: `你是一位專業的金融教練，使用者正在參與「人生投資模擬」的學習。
+                        
+情境背景：${card.details[0]?.txt || ''}
+
+使用者選擇了：${choiceText} (選項 ${choice})
+
+選擇的具體影響：
+- 即時影響：${shortTerm || '無描述'}
+- 中期影響：${midTerm || '無描述'}
+- 長期影響：${longTerm || '無描述'}
+
+投資智慧：${card.case || '無'}
+
+請根據使用者的選擇，提供專業的金融分析與建議：
+1. 選擇評估：這個選擇在財務規劃上的優缺點
+2. 風險分析：可能面臨的風險與機會
+3. 替代方案：如果使用者想改變，有什麼其他選擇
+4. 實際建議：具體的下一步行動建議
+
+請用繁體中文回答，保持專業且易於理解，語氣親切。
+回答格式：
+【選擇評估】
+【風險分析】
+【替代方案】
+【實際建議】` 
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.7,
+                    topP: 0.8,
+                    topK: 40,
+                    maxOutputTokens: 2000,
+                }
+            };
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            const data = await response.json();
+            
+            if (data.error) {
+                aiAnalysisContent.innerHTML = `
+                    <div style="color:#dc2626; background:#fef2f2; padding:15px; border-radius:8px; border-left:4px solid #dc2626;">
+                        <strong>❌ 錯誤：</strong> ${data.error.message}<br><br>
+                        <small>請確認 API Key 是否正確且有開啟 Gemini API 權限</small>
+                    </div>
+                `;
+            } else if (data.candidates?.[0]?.content) {
+                const aiText = data.candidates[0].content.parts[0].text;
+                const formattedText = aiText
+                    .replace(/【選擇評估】/g, '<div style="margin-top:15px; font-weight:bold; color:var(--primary);">選擇評估</div>')
+                    .replace(/【風險分析】/g, '<div style="margin-top:15px; font-weight:bold; color:#dc2626;">風險分析</div>')
+                    .replace(/【替代方案】/g, '<div style="margin-top:15px; font-weight:bold; color:#059669;">替代方案</div>')
+                    .replace(/【實際建議】/g, '<div style="margin-top:15px; font-weight:bold; color:#f59e0b;">實際建議</div>')
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+                
+                aiAnalysisContent.innerHTML = `
+                    <div style="border-radius:8px; overflow:hidden;">
+                        <div style="background:#0369a1; color:white; padding:12px 20px; font-weight:bold; display:flex; align-items:center; gap:10px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                            AI 對「${choiceText}」的分析
+                        </div>
+                        <div style="padding:20px; background:white; line-height:1.7; color:#1e293b;">
+                            ${formattedText}
+                        </div>
+                        <div style="padding:15px; background:#f0f9ff; border-top:1px solid #bae6fd; font-size:0.85rem; color:#475569;">
+                            💡 提示：此分析僅供參考，真實人生決策請綜合考量個人情況
+                        </div>
+                    </div>
+                `;
+                
+                // 關閉選擇彈窗
+                closeModal();
+            }
+        } catch (error) {
+            aiAnalysisContent.innerHTML = `
+                <div style="color:#dc2626; background:#fef2f2; padding:15px; border-radius:8px;">
+                    <strong>❌ 連線失敗</strong><br>
+                    請檢查網路連線與 API Key 有效性
+                </div>
+            `;
+        }
+    }
+
+    function closeModal(event) {
+        const modal = document.getElementById('detailModal');
+        if (!modal) return;
+        
+        // 如果點擊了關閉按鈕
+        if (event && event.target.classList.contains('close-btn')) {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            return;
+        }
+        
+        // 如果點擊了遮罩層
+        if (event && event.target === modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            return;
+        }
+        
+        // 直接調用函數
+        if (!event) {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    }
+
+    function toggleMobileMenu() {
+        const sidebar = document.querySelector('.sidebar-mobile');
+        const overlay = document.querySelector('.sidebar-mobile-overlay');
+        
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    }
+
+    function closeMobileMenu() {
+        const sidebar = document.querySelector('.sidebar-mobile');
+        const overlay = document.querySelector('.sidebar-mobile-overlay');
+        
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    }
+
+    async function askGemini() {
+        const input = document.getElementById('userPrompt')?.value;
+        const responseDiv = document.getElementById('aiResponse');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        
+        if (!input || !input.trim()) { 
+            alert("請輸入問題！"); 
+            return; 
+        }
+        
+        const API_KEY = apiKeyInput?.value.trim() || "";
+        if (!API_KEY) { 
+            alert("請輸入 Google AI Studio 的 API Key"); 
+            return; 
+        }
+        
+        // 顯示載入中
+        responseDiv.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px; color:#64748b;">
+                <div style="width:20px; height:20px; border:2px solid #f3f4f6; border-top:2px solid #0f766e; border-radius:50%; animation:spin 1s linear infinite;"></div>
+                AI 正在思考中，請稍候...
+            </div>
+        `;
+        
+        try {
+            const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=" + API_KEY;
+            
+            const payload = {
+                contents: [{
+                    parts: [{ 
+                        text: `你是一位專業的金融教練，使用者正在學習「金融素養特訓班」中的投資知識。
+                        
+當前學習模組：${curriculum.find(m => m.id === currentModuleId)?.title}
+使用者問題：${input}
+                        
+請用繁體中文回答，保持專業且易於理解，並結合相關金融概念提供實用建議。
+回答格式：
+1. 核心摘要（1-2句）
+2. 詳細分析（分點說明）
+3. 實際應用建議
+4. 注意事項提醒
+                        
+語氣：親切專業，使用台灣常用金融術語。` 
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.7,
+                    topP: 0.8,
+                    topK: 40,
+                    maxOutputTokens: 1500,
+                }
+            };
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            const data = await response.json();
+            
+            if (data.error) {
+                responseDiv.innerHTML = `
+                    <div style="color:#dc2626; background:#fef2f2; padding:15px; border-radius:8px; border-left:4px solid #dc2626;">
+                        <strong>❌ 錯誤：</strong> ${data.error.message}<br><br>
+                        <small>請確認 API Key 是否正確且有開啟 Gemini API 權限</small>
+                    </div>
+                `;
+            } else if (data.candidates?.[0]?.content) {
+                const aiText = data.candidates[0].content.parts[0].text;
+                const formattedText = aiText
+                    .replace(/\*\*(.*?)\*\*/g, '<b style="color:var(--primary);">$1</b>')
+                    .replace(/\n/g, '<br>');
+                
+                responseDiv.innerHTML = `
+                    <div style="border-radius:8px; overflow:hidden;">
+                        <div style="background:#0369a1; color:white; padding:12px 20px; font-weight:bold; display:flex; align-items:center; gap:10px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                            AI 理財顧問建議
+                        </div>
+                        <div style="padding:20px; background:white; line-height:1.7; color:#1e293b;">
+                            ${formattedText}
+                        </div>
+                        <div style="padding:15px; background:#f0f9ff; border-top:1px solid #bae6fd; font-size:0.85rem; color:#475569;">
+                            💡 提示：此建議僅供參考，投資有風險，請謹慎評估
+                        </div>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            responseDiv.innerHTML = `
+                <div style="color:#dc2626; background:#fef2f2; padding:15px; border-radius:8px;">
+                    <strong>❌ 連線失敗</strong><br>
+                    請檢查網路連線與 API Key 有效性
+                </div>
+            `;
+        }
+    }
+
+    // 頁面載入完成後初始化
+    window.addEventListener('DOMContentLoaded', init);
+    </script>    
+</body>
+</html>
